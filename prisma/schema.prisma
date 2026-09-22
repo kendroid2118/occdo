@@ -35,6 +35,13 @@ enum AttendanceStatus {
   ABSENT
 }
 
+/// Constrained fund-monitoring movement. Amounts are always stored positive.
+enum FundLedgerEntryKind {
+  DISBURSEMENT
+  ADJUSTMENT
+  RECOVERY
+}
+
 model User {
   id            String    @id @default(cuid())
   name          String?
@@ -60,6 +67,7 @@ model User {
   trainingEventsUpdated        TrainingEvent[]  @relation("TrainingEventUpdatedBy")
   assistanceRecordsCreated     AssistanceRecord[] @relation("AssistanceRecordCreatedBy")
   assistanceRecordsUpdated     AssistanceRecord[] @relation("AssistanceRecordUpdatedBy")
+  fundLedgerEntriesRecorded    FundLedgerEntry[]
 }
 
 model Account {
@@ -482,9 +490,26 @@ model AssistanceRecord {
   status            AssistanceStatus  @relation(fields: [statusId], references: [id], onDelete: Restrict)
   createdBy         User              @relation("AssistanceRecordCreatedBy", fields: [createdById], references: [id], onDelete: Restrict)
   updatedBy         User              @relation("AssistanceRecordUpdatedBy", fields: [updatedById], references: [id], onDelete: Restrict)
+  ledgerEntries     FundLedgerEntry[]
 
   @@index([cooperativeId])
   @@index([assistanceTypeId])
   @@index([statusId])
   @@index([requestedAt])
+}
+
+model FundLedgerEntry {
+  id                  String               @id @default(cuid())
+  assistanceRecordId  String
+  entryDate           DateTime
+  amount              Decimal              @db.Decimal(14, 2)
+  entryKind           FundLedgerEntryKind
+  remarks             String?
+  createdAt           DateTime             @default(now())
+  recordedById        String
+  assistanceRecord    AssistanceRecord     @relation(fields: [assistanceRecordId], references: [id], onDelete: Cascade)
+  recordedBy          User                 @relation(fields: [recordedById], references: [id], onDelete: Restrict)
+
+  @@index([assistanceRecordId, entryDate])
+  @@index([entryKind])
 }

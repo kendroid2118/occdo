@@ -11,3 +11,9 @@ export const ASSISTANCE_ACTION_ERROR_MESSAGE: Record<
   CONFLICT: "That assistance record could not be saved.",
   NOT_FOUND: "Assistance record or cooperative was not found.",
 };
+
+export const FUND_LEDGER_ENTRY_KIND_LABEL: Record<string, string> = {
+  DISBURSEMENT: "Disbursement",
+  ADJUSTMENT: "Adjustment",
+  RECOVERY: "Recovery",
+};

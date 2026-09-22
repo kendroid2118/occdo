@@ -24,6 +24,7 @@ import {
   CooperativeNotFoundError,
   CooperativeReferenceError,
 } from "@/lib/dal/cooperatives";
+import { FundLedgerConflictError } from "@/lib/dal/fund-ledger";
 import {
   listActiveAssistanceStatuses,
   listActiveAssistanceTypes,
@@ -73,7 +74,7 @@ async function mapAssistanceAction<T>(
     ) {
       return { ok: false, code: "VALIDATION" };
     }
-    if (error instanceof AssistanceCatalogConflictError) {
+    if (error instanceof AssistanceCatalogConflictError || error instanceof FundLedgerConflictError) {
       return { ok: false, code: "CONFLICT" };
     }
     throw error;

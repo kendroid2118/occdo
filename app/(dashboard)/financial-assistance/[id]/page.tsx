@@ -3,7 +3,12 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { AssistanceWorkflow } from "@/components/assistance/assistance-workflow";
+import { FundLedgerPanel } from "@/components/assistance/fund-ledger-panel";
 import { getAssistanceRecordAction } from "@/lib/actions/assistance";
+import {
+  getFundLedgerSummaryAction,
+  listFundLedgerEntriesAction,
+} from "@/lib/actions/fund-ledger";
 import { getCurrentSessionUser } from "@/lib/auth/current-session";
 import { ASSISTANCE_ACTION_ERROR_MESSAGE } from "@/lib/assistance/errors";
 import { canWriteCooperatives } from "@/lib/cooperatives/access";
@@ -57,6 +62,18 @@ export default async function AssistanceDetailPage({ params }: AssistanceDetailP
 
   const canWrite = sessionUser ? canWriteCooperatives(sessionUser.role) : false;
   const record = result.data;
+  const ledgerInput = {
+    assistanceRecordId: record.id,
+    cooperativeId: record.cooperativeId,
+  };
+  const [entriesResult, summaryResult] = await Promise.all([
+    listFundLedgerEntriesAction(ledgerInput),
+    getFundLedgerSummaryAction(ledgerInput),
+  ]);
+  const entries = entriesResult.ok ? entriesResult.data : [];
+  const summary = summaryResult.ok
+    ? summaryResult.data
+    : { disbursed: "0.00", adjustments: "0.00", recovered: "0.00", net: "0.00" };
 
   return (
     <div className="space-y-6">
@@ -90,6 +107,14 @@ export default async function AssistanceDetailPage({ params }: AssistanceDetailP
       </dl>
 
       {canWrite ? <AssistanceWorkflow record={record} /> : null}
+      <FundLedgerPanel
+        assistanceRecordId={record.id}
+        canWrite={canWrite}
+        cooperativeId={record.cooperativeId}
+        entries={entries}
+        statusCode={record.status.code}
+        summary={summary}
+      />
     </div>
   );
 }

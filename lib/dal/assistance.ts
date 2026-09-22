@@ -8,6 +8,7 @@ import {
   CooperativeNotFoundError,
   CooperativeReferenceError,
 } from "@/lib/dal/cooperatives";
+import { insertReleaseDisbursement } from "@/lib/dal/fund-ledger";
 import { prisma } from "@/lib/dal/prisma";
 import type { ReferenceRecord } from "@/lib/dal/reference";
 import type {
@@ -352,6 +353,15 @@ async function transitionAssistanceStatus(options: {
         select: recordSelect,
       }),
     );
+
+    if (options.toCode === ASSISTANCE_STATUS_CODES.RELEASED) {
+      await insertReleaseDisbursement(tx, {
+        assistanceRecordId: updated.id,
+        amount: updated.amount,
+        entryDate: now,
+        actorId: options.actorId,
+      });
+    }
 
     await writeAuditLog(
       {

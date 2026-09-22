@@ -384,7 +384,7 @@ Statuses: `TODO` | `IN PROGRESS` | `BLOCKED` | `READY FOR QA` | `DONE`
 ## OCCDO-030 — Fund monitoring entries
 
 - **Milestone:** M7
-- **Status:** TODO
+- **Status:** DONE
 - **Objective:** Simple ledger entries against an assistance record.
 - **Files/modules affected:** `FundLedgerEntry`, UI
 - **Dependencies:** OCCDO-029
