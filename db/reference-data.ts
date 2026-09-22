@@ -86,6 +86,12 @@ export const SEED_DOCUMENT_TYPES: readonly ReferenceSeedRow[] = [
   { code: "DEMO-CDA-CERT", name: "Demo CDA Certificate", sortOrder: 3 },
 ];
 
+/** Office resource names only. Templates are not served from public URLs. */
+export const SEED_DOCUMENT_TEMPLATES: readonly ReferenceSeedRow[] = [
+  { code: "DEMO-CDA-FORM", name: "Demo CDA Reporting Form", sortOrder: 1 },
+  { code: "DEMO-MEMBERSHIP-FORM", name: "Demo Membership Form", sortOrder: 2 },
+];
+
 export const SEED_OFFICER_POSITIONS: readonly ReferenceSeedRow[] = [
   { code: "CHAIR", name: "Chairperson", sortOrder: 1 },
   { code: "VICE-CHAIR", name: "Vice Chairperson", sortOrder: 2 },

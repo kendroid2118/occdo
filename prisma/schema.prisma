@@ -70,7 +70,8 @@ model User {
   fundLedgerEntriesRecorded    FundLedgerEntry[]
   complianceRecordsCreated     ComplianceRecord[] @relation("ComplianceRecordCreatedBy")
   complianceRecordsVerified    ComplianceRecord[] @relation("ComplianceRecordVerifiedBy")
-  documentsUploaded            CooperativeDocument[]
+  documentsUploaded            CooperativeDocument[] @relation("DocumentUploadedBy")
+  documentsVerified            CooperativeDocument[] @relation("DocumentVerifiedBy")
 }
 
 model Account {
@@ -593,21 +594,40 @@ model DocumentType {
 
 /// Cooperative-scoped upload metadata. storedFilename is server-generated and is never a client path.
 model CooperativeDocument {
-  id                String        @id @default(cuid())
-  cooperativeId     String
-  documentTypeId    String
-  reportingPeriod   String?
-  originalFilename  String
-  storedFilename    String        @unique
-  mimeType          String
-  sizeBytes         Int
-  uploadedAt        DateTime      @default(now())
-  uploadedById      String
-  cooperative       Cooperative   @relation(fields: [cooperativeId], references: [id], onDelete: Cascade)
-  documentType      DocumentType  @relation(fields: [documentTypeId], references: [id], onDelete: Restrict)
-  uploadedBy        User          @relation(fields: [uploadedById], references: [id], onDelete: Restrict)
+  id                  String        @id @default(cuid())
+  cooperativeId       String
+  documentTypeId      String
+  reportingPeriod     String?
+  originalFilename    String
+  storedFilename      String        @unique
+  mimeType            String
+  sizeBytes           Int
+  verificationStatus  String        @default("UNVERIFIED")
+  uploadedAt          DateTime      @default(now())
+  uploadedById        String
+  verifiedAt          DateTime?
+  verifiedById        String?
+  cooperative         Cooperative   @relation(fields: [cooperativeId], references: [id], onDelete: Cascade)
+  documentType        DocumentType  @relation(fields: [documentTypeId], references: [id], onDelete: Restrict)
+  uploadedBy          User          @relation("DocumentUploadedBy", fields: [uploadedById], references: [id], onDelete: Restrict)
+  verifiedBy          User?         @relation("DocumentVerifiedBy", fields: [verifiedById], references: [id], onDelete: Restrict)
 
   @@index([cooperativeId])
   @@index([documentTypeId])
   @@index([uploadedAt])
+  @@index([verificationStatus])
+}
+
+/// Office-level template/form catalog. Metadata only in M9; no public file URLs.
+model DocumentTemplate {
+  id          String   @id @default(cuid())
+  code        String   @unique
+  name        String
+  description String?
+  sortOrder   Int      @default(0)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([isActive, sortOrder])
 }

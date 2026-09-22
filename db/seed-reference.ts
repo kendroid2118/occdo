@@ -13,6 +13,7 @@ import {
   SEED_ASSISTANCE_TYPES,
   SEED_COMPLIANCE_REQUIREMENTS,
   SEED_COMPLIANCE_STATUSES,
+  SEED_DOCUMENT_TEMPLATES,
   SEED_DOCUMENT_TYPES,
   SEED_PROGRAMS,
   SEED_SERVICE_TYPES,
@@ -231,6 +232,21 @@ export async function seedCooperativeReferenceData(
 
   await upsertRows(SEED_DOCUMENT_TYPES, (row) =>
     prisma.documentType.upsert({
+      where: { code: row.code },
+      create: {
+        code: row.code,
+        name: row.name,
+        sortOrder: row.sortOrder,
+      },
+      update: {
+        name: row.name,
+        sortOrder: row.sortOrder,
+      },
+    }),
+  );
+
+  await upsertRows(SEED_DOCUMENT_TEMPLATES, (row) =>
+    prisma.documentTemplate.upsert({
       where: { code: row.code },
       create: {
         code: row.code,

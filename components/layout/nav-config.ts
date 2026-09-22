@@ -102,7 +102,7 @@ export const navigation: NavItem[] = [
     icon: FolderOpen,
     children: [
       { href: "/documents", label: "Cooperative Documents" },
-      { href: "/documents", label: "Templates / Forms" },
+      { href: "/documents/templates", label: "Templates / Forms" },
     ],
   },
   {

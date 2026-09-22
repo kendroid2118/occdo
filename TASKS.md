@@ -436,7 +436,7 @@ Statuses: `TODO` | `IN PROGRESS` | `BLOCKED` | `READY FOR QA` | `DONE`
 ## OCCDO-034 — Document verification and templates stub
 
 - **Milestone:** M9
-- **Status:** TODO
+- **Status:** DONE
 - **Objective:** Verification status on documents; optional office `DocumentTemplate` list without unsafe public file serving.
 - **Files/modules affected:** actions, Documents UI
 - **Dependencies:** OCCDO-033

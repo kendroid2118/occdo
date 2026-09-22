@@ -6,7 +6,8 @@ import { writeAuditLog } from "@/lib/dal/audit";
 import { CooperativeNotFoundError } from "@/lib/dal/cooperatives";
 import { requireActiveDocumentType } from "@/lib/dal/document-types";
 import { prisma } from "@/lib/dal/prisma";
-import type { ListDocumentsInput } from "@/lib/validation/document";
+import { DOCUMENT_VERIFICATION_STATUS } from "@/lib/documents/verification-status";
+import type { ListDocumentsInput, VerifyDocumentInput } from "@/lib/validation/document";
 
 export class CooperativeDocumentNotFoundError extends Error {
   readonly code = "NOT_FOUND" as const;
@@ -14,6 +15,24 @@ export class CooperativeDocumentNotFoundError extends Error {
   constructor() {
     super("Document not found");
     this.name = "CooperativeDocumentNotFoundError";
+  }
+}
+
+export class DocumentScopeError extends Error {
+  readonly code = "FORBIDDEN" as const;
+
+  constructor() {
+    super("Document does not belong to this cooperative");
+    this.name = "DocumentScopeError";
+  }
+}
+
+export class DocumentVerifyError extends Error {
+  readonly code = "VALIDATION" as const;
+
+  constructor() {
+    super("Document cannot be verified from its current state");
+    this.name = "DocumentVerifyError";
   }
 }
 
@@ -25,8 +44,11 @@ const listSelect = {
   originalFilename: true,
   mimeType: true,
   sizeBytes: true,
+  verificationStatus: true,
   uploadedAt: true,
   uploadedById: true,
+  verifiedAt: true,
+  verifiedById: true,
   documentType: {
     select: {
       id: true,
@@ -42,6 +64,12 @@ const listSelect = {
     },
   },
   uploadedBy: {
+    select: {
+      id: true,
+      name: true,
+    },
+  },
+  verifiedBy: {
     select: {
       id: true,
       name: true,
@@ -90,7 +118,27 @@ function documentSnapshot(row: CooperativeDocumentRecord) {
     originalFilename: row.originalFilename,
     mimeType: row.mimeType,
     sizeBytes: row.sizeBytes,
+    verificationStatus: row.verificationStatus,
+    verifiedById: row.verifiedById,
+    verifiedAt: row.verifiedAt,
   };
+}
+
+async function loadScopedDocument(
+  tx: Prisma.TransactionClient,
+  input: { id: string; cooperativeId: string },
+): Promise<CooperativeDocumentRecord> {
+  const existing = await tx.cooperativeDocument.findUnique({
+    where: { id: input.id },
+    select: listSelect,
+  });
+  if (!existing) {
+    throw new CooperativeDocumentNotFoundError();
+  }
+  if (existing.cooperativeId !== input.cooperativeId) {
+    throw new DocumentScopeError();
+  }
+  return existing;
 }
 
 function listWhere(input: ListDocumentsInput): Prisma.CooperativeDocumentWhereInput {
@@ -173,6 +221,7 @@ export async function createCooperativeDocument(options: {
         storedFilename: options.input.storedFilename,
         mimeType: options.input.mimeType,
         sizeBytes: options.input.sizeBytes,
+        verificationStatus: DOCUMENT_VERIFICATION_STATUS.UNVERIFIED,
         uploadedById: options.actorId,
       },
       select: listSelect,
@@ -191,5 +240,48 @@ export async function createCooperativeDocument(options: {
     );
 
     return created;
+  });
+}
+
+export async function verifyCooperativeDocument(options: {
+  input: VerifyDocumentInput;
+  actorId: string;
+}): Promise<CooperativeDocumentRecord> {
+  return prisma.$transaction(async (tx) => {
+    const existing = await loadScopedDocument(tx, options.input);
+    if (
+      existing.verificationStatus === DOCUMENT_VERIFICATION_STATUS.VERIFIED ||
+      existing.verifiedById
+    ) {
+      throw new DocumentVerifyError();
+    }
+
+    const verifiedAt = new Date();
+    const updated = await tx.cooperativeDocument.update({
+      where: { id: existing.id },
+      data: {
+        verificationStatus: DOCUMENT_VERIFICATION_STATUS.VERIFIED,
+        verifiedById: options.actorId,
+        verifiedAt,
+      },
+      select: listSelect,
+    });
+
+    await writeAuditLog(
+      {
+        actorId: options.actorId,
+        action: "DOCUMENT_VERIFY",
+        entityType: "CooperativeDocument",
+        entityId: updated.id,
+        source: "WEB",
+        metadata: {
+          before: documentSnapshot(existing),
+          after: documentSnapshot(updated),
+        },
+      },
+      tx,
+    );
+
+    return updated;
   });
 }

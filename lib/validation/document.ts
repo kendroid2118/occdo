@@ -33,6 +33,11 @@ export const getDocumentSchema = z.object({
   id: referenceIdSchema,
 });
 
+export const verifyDocumentSchema = z.object({
+  id: referenceIdSchema,
+  cooperativeId: referenceIdSchema,
+});
+
 export const listDocumentsSchema = z.object({
   page: z.preprocess(
     (value) => (value === "" || value == null ? undefined : value),
@@ -47,6 +52,8 @@ export const listDocumentsSchema = z.object({
 });
 
 export const listDocumentCatalogsSchema = z.object({});
+export const listDocumentTemplatesSchema = z.object({});
 
 export type UploadDocumentInput = z.infer<typeof uploadDocumentSchema>;
+export type VerifyDocumentInput = z.infer<typeof verifyDocumentSchema>;
 export type ListDocumentsInput = z.infer<typeof listDocumentsSchema>;

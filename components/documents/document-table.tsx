@@ -1,4 +1,7 @@
+import Link from "next/link";
+
 import type { CooperativeDocumentRecord } from "@/lib/actions/documents";
+import { DOCUMENT_VERIFICATION_STATUS } from "@/lib/documents/verification-status";
 
 type DocumentTableProps = {
   items: CooperativeDocumentRecord[];
@@ -31,6 +34,7 @@ export function DocumentTable({ items }: DocumentTableProps) {
             <th className="px-4 py-3 font-medium">Type</th>
             <th className="px-4 py-3 font-medium">Filename</th>
             <th className="px-4 py-3 font-medium">Period</th>
+            <th className="px-4 py-3 font-medium">Status</th>
             <th className="px-4 py-3 font-medium">Download</th>
           </tr>
         </thead>
@@ -45,6 +49,16 @@ export function DocumentTable({ items }: DocumentTableProps) {
               <td className="px-4 py-3 text-slate-700">{row.documentType.name}</td>
               <td className="px-4 py-3 text-slate-700">{row.originalFilename}</td>
               <td className="px-4 py-3 text-slate-700">{row.reportingPeriod ?? "—"}</td>
+              <td className="px-4 py-3">
+                <Link
+                  className="font-medium text-occdo-800 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-occdo-700"
+                  href={`/documents/${row.id}`}
+                >
+                  {row.verificationStatus === DOCUMENT_VERIFICATION_STATUS.VERIFIED
+                    ? "Verified"
+                    : "Unverified"}
+                </Link>
+              </td>
               <td className="px-4 py-3">
                 <a
                   className="font-medium text-occdo-800 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-occdo-700"

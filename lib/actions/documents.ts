@@ -15,12 +15,16 @@ import {
 } from "@/lib/dal/document-types";
 import {
   CooperativeDocumentNotFoundError,
+  DocumentScopeError,
+  DocumentVerifyError,
   createCooperativeDocument,
   getCooperativeDocumentById,
   listCooperativeDocuments,
+  verifyCooperativeDocument,
   type CooperativeDocumentListResult,
   type CooperativeDocumentRecord,
 } from "@/lib/dal/documents";
+import { listActiveDocumentTemplates } from "@/lib/dal/document-templates";
 import type { ReferenceRecord } from "@/lib/dal/reference";
 import { DocumentPathError, generateStoredFilename } from "@/lib/documents/filename";
 import { inspectDocumentUpload } from "@/lib/documents/inspect";
@@ -32,8 +36,10 @@ import {
 import {
   getDocumentSchema,
   listDocumentCatalogsSchema,
+  listDocumentTemplatesSchema,
   listDocumentsSchema,
   uploadDocumentSchema,
+  verifyDocumentSchema,
 } from "@/lib/validation/document";
 import { createCatalogItemSchema } from "@/lib/validation/program";
 
@@ -55,6 +61,9 @@ async function mapDocumentAction<T>(
   try {
     return await run();
   } catch (error: unknown) {
+    if (error instanceof DocumentScopeError) {
+      return { ok: false, code: "FORBIDDEN" };
+    }
     if (
       error instanceof CooperativeDocumentNotFoundError ||
       error instanceof DocumentTypeNotFoundError ||
@@ -65,7 +74,8 @@ async function mapDocumentAction<T>(
     if (
       error instanceof DocumentUploadValidationError ||
       error instanceof DocumentPathError ||
-      error instanceof DocumentTypeInactiveError
+      error instanceof DocumentTypeInactiveError ||
+      error instanceof DocumentVerifyError
     ) {
       return { ok: false, code: "VALIDATION" };
     }
@@ -112,6 +122,13 @@ const uploadDocumentInner = roleActionClient({
   },
 });
 
+const verifyDocumentInner = roleActionClient({
+  schema: verifyDocumentSchema,
+  roles: COOPERATIVE_WRITE_ROLES,
+  handler: async ({ user, input }) =>
+    verifyCooperativeDocument({ input, actorId: user.id }),
+});
+
 const listDocumentsInner = roleActionClient({
   schema: listDocumentsSchema,
   roles: AUTH_ROLES,
@@ -139,6 +156,12 @@ export const listDocumentCatalogsAction = roleActionClient({
   },
 });
 
+export const listDocumentTemplatesAction = roleActionClient({
+  schema: listDocumentTemplatesSchema,
+  roles: AUTH_ROLES,
+  handler: async (): Promise<ReferenceRecord[]> => listActiveDocumentTemplates(),
+});
+
 export async function createDocumentTypeAction(
   input: unknown,
 ): Promise<DocumentActionResult<ReferenceRecord>> {
@@ -161,6 +184,12 @@ export async function getDocumentAction(
   input: unknown,
 ): Promise<DocumentActionResult<CooperativeDocumentRecord>> {
   return mapDocumentAction(() => getDocumentInner(input));
+}
+
+export async function verifyDocumentAction(
+  input: unknown,
+): Promise<DocumentActionResult<CooperativeDocumentRecord>> {
+  return mapDocumentAction(() => verifyDocumentInner(input));
 }
 
 export async function uploadDocumentFormAction(
@@ -186,4 +215,15 @@ export async function uploadDocumentFormAction(
     redirect("/documents");
   }
   return result;
+}
+
+export async function verifyDocumentFormAction(formData: FormData): Promise<void> {
+  const id = formData.get("id");
+  const result = await verifyDocumentAction({
+    id,
+    cooperativeId: formData.get("cooperativeId"),
+  });
+  if (result.ok && typeof id === "string") {
+    redirect(`/documents/${id}`);
+  }
 }
