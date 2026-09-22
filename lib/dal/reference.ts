@@ -101,3 +101,19 @@ export async function listActiveServiceTypes(): Promise<ReferenceRecord[]> {
     orderBy: activeOrder,
   });
 }
+
+export async function listActiveAssistanceTypes(): Promise<ReferenceRecord[]> {
+  return prisma.assistanceType.findMany({
+    where: { isActive: true },
+    select: referenceSelect,
+    orderBy: activeOrder,
+  });
+}
+
+export async function listActiveAssistanceStatuses(): Promise<ReferenceRecord[]> {
+  return prisma.assistanceStatus.findMany({
+    where: { isActive: true },
+    select: referenceSelect,
+    orderBy: activeOrder,
+  });
+}

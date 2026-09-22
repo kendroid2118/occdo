@@ -373,7 +373,7 @@ Statuses: `TODO` | `IN PROGRESS` | `BLOCKED` | `READY FOR QA` | `DONE`
 ## OCCDO-029 — Assistance types and records
 
 - **Milestone:** M7
-- **Status:** TODO
+- **Status:** DONE
 - **Objective:** Configurable assistance types and `AssistanceRecord` (amount, dates, status, fund source).
 - **Files/modules affected:** Prisma, DAL, actions, Financial Assistance UI
 - **Dependencies:** OCCDO-017, OCCDO-014

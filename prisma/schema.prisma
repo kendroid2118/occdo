@@ -58,6 +58,8 @@ model User {
   serviceDeliveriesRecorded    ServiceDelivery[]
   trainingEventsCreated        TrainingEvent[]  @relation("TrainingEventCreatedBy")
   trainingEventsUpdated        TrainingEvent[]  @relation("TrainingEventUpdatedBy")
+  assistanceRecordsCreated     AssistanceRecord[] @relation("AssistanceRecordCreatedBy")
+  assistanceRecordsUpdated     AssistanceRecord[] @relation("AssistanceRecordUpdatedBy")
 }
 
 model Account {
@@ -223,6 +225,7 @@ model Cooperative {
   accreditationCases    AccreditationCase[]
   serviceDeliveries     ServiceDelivery[]
   trainingParticipants  TrainingParticipant[]
+  assistanceRecords     AssistanceRecord[]
 
   @@index([name])
   @@index([typeId])
@@ -429,4 +432,59 @@ model TrainingParticipant {
 
   @@index([trainingEventId])
   @@index([cooperativeId])
+}
+
+model AssistanceType {
+  id          String             @id @default(cuid())
+  code        String             @unique
+  name        String
+  description String?
+  sortOrder   Int                @default(0)
+  isActive    Boolean            @default(true)
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+  records     AssistanceRecord[]
+
+  @@index([isActive, sortOrder])
+}
+
+model AssistanceStatus {
+  id          String             @id @default(cuid())
+  code        String             @unique
+  name        String
+  description String?
+  sortOrder   Int                @default(0)
+  isActive    Boolean            @default(true)
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+  records     AssistanceRecord[]
+
+  @@index([isActive, sortOrder])
+}
+
+model AssistanceRecord {
+  id                String            @id @default(cuid())
+  cooperativeId     String
+  assistanceTypeId  String
+  amount            Decimal           @db.Decimal(14, 2)
+  requestedAt       DateTime
+  approvedAt        DateTime?
+  releasedAt        DateTime?
+  statusId          String
+  fundSource        String?
+  remarks           String?
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+  createdById       String
+  updatedById       String
+  cooperative       Cooperative       @relation(fields: [cooperativeId], references: [id], onDelete: Cascade)
+  assistanceType    AssistanceType    @relation(fields: [assistanceTypeId], references: [id], onDelete: Restrict)
+  status            AssistanceStatus  @relation(fields: [statusId], references: [id], onDelete: Restrict)
+  createdBy         User              @relation("AssistanceRecordCreatedBy", fields: [createdById], references: [id], onDelete: Restrict)
+  updatedBy         User              @relation("AssistanceRecordUpdatedBy", fields: [updatedById], references: [id], onDelete: Restrict)
+
+  @@index([cooperativeId])
+  @@index([assistanceTypeId])
+  @@index([statusId])
+  @@index([requestedAt])
 }

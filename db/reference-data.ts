@@ -51,6 +51,19 @@ export const SEED_SERVICE_TYPES: readonly ReferenceSeedRow[] = [
   { code: "DEMO-ORIENTATION", name: "Demo Orientation", sortOrder: 3 },
 ];
 
+/** Labeled demo fixtures. No frozen assistance-type list. */
+export const SEED_ASSISTANCE_TYPES: readonly ReferenceSeedRow[] = [
+  { code: "DEMO-GRANT", name: "Demo Grant", sortOrder: 1 },
+  { code: "DEMO-LIVELIHOOD-FUND", name: "Demo Livelihood Fund", sortOrder: 2 },
+  { code: "DEMO-OTHERS-ASSIST", name: "Demo Other Assistance", sortOrder: 3 },
+];
+
+export const SEED_ASSISTANCE_STATUSES: readonly ReferenceSeedRow[] = [
+  { code: "REQUESTED", name: "Requested", sortOrder: 1 },
+  { code: "APPROVED", name: "Approved", sortOrder: 2 },
+  { code: "RELEASED", name: "Released", sortOrder: 3 },
+];
+
 export const SEED_OFFICER_POSITIONS: readonly ReferenceSeedRow[] = [
   { code: "CHAIR", name: "Chairperson", sortOrder: 1 },
   { code: "VICE-CHAIR", name: "Vice Chairperson", sortOrder: 2 },
