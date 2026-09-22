@@ -21,6 +21,13 @@ enum Role {
   USER
 }
 
+/// Constrained event kind for Capacity Building. Not a free-form string.
+enum TrainingKind {
+  TRAINING
+  SEMINAR
+  ORIENTATION
+}
+
 model User {
   id            String    @id @default(cuid())
   name          String?
@@ -42,6 +49,8 @@ model User {
   accreditationCasesCreated    AccreditationCase[]  @relation("AccreditationCaseCreatedBy")
   accreditationCasesUpdated    AccreditationCase[]  @relation("AccreditationCaseUpdatedBy")
   serviceDeliveriesRecorded    ServiceDelivery[]
+  trainingEventsCreated        TrainingEvent[]  @relation("TrainingEventCreatedBy")
+  trainingEventsUpdated        TrainingEvent[]  @relation("TrainingEventUpdatedBy")
 }
 
 model Account {
@@ -323,29 +332,31 @@ model AccreditationCase {
 }
 
 model Program {
-  id          String            @id @default(cuid())
-  code        String            @unique
-  name        String
-  description String?
-  sortOrder   Int               @default(0)
-  isActive    Boolean           @default(true)
-  createdAt   DateTime          @default(now())
-  updatedAt   DateTime          @updatedAt
-  deliveries  ServiceDelivery[]
+  id              String            @id @default(cuid())
+  code            String            @unique
+  name            String
+  description     String?
+  sortOrder       Int               @default(0)
+  isActive        Boolean           @default(true)
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+  deliveries      ServiceDelivery[]
+  trainingEvents  TrainingEvent[]
 
   @@index([isActive, sortOrder])
 }
 
 model ServiceType {
-  id          String            @id @default(cuid())
-  code        String            @unique
-  name        String
-  description String?
-  sortOrder   Int               @default(0)
-  isActive    Boolean           @default(true)
-  createdAt   DateTime          @default(now())
-  updatedAt   DateTime          @updatedAt
-  deliveries  ServiceDelivery[]
+  id              String            @id @default(cuid())
+  code            String            @unique
+  name            String
+  description     String?
+  sortOrder       Int               @default(0)
+  isActive        Boolean           @default(true)
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+  deliveries      ServiceDelivery[]
+  trainingEvents  TrainingEvent[]
 
   @@index([isActive, sortOrder])
 }
@@ -368,4 +379,29 @@ model ServiceDelivery {
   @@index([cooperativeId])
   @@index([serviceTypeId, deliveredAt])
   @@index([deliveredAt])
+}
+
+model TrainingEvent {
+  id             String       @id @default(cuid())
+  title          String
+  kind           TrainingKind
+  startAt        DateTime
+  endAt          DateTime?
+  venue          String
+  programId      String?
+  serviceTypeId  String?
+  remarks        String?
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  createdById    String
+  updatedById    String
+  program        Program?     @relation(fields: [programId], references: [id], onDelete: Restrict)
+  serviceType    ServiceType? @relation(fields: [serviceTypeId], references: [id], onDelete: Restrict)
+  createdBy      User         @relation("TrainingEventCreatedBy", fields: [createdById], references: [id], onDelete: Restrict)
+  updatedBy      User         @relation("TrainingEventUpdatedBy", fields: [updatedById], references: [id], onDelete: Restrict)
+
+  @@index([kind])
+  @@index([startAt])
+  @@index([programId])
+  @@index([serviceTypeId])
 }

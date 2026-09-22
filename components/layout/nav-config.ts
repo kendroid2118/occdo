@@ -132,6 +132,12 @@ export function titleForPath(pathname: string): string {
   if (pathname === "/" || pathname === "/dashboard") {
     return "Dashboard";
   }
+  if (pathname === "/capacity-building/new") {
+    return "New training event";
+  }
+  if (/^\/capacity-building\/[^/]+\/edit$/.test(pathname)) {
+    return "Edit training event";
+  }
   if (pathname === "/cooperatives/new") {
     return "New cooperative";
   }

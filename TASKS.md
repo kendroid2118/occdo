@@ -347,7 +347,7 @@ Statuses: `TODO` | `IN PROGRESS` | `BLOCKED` | `READY FOR QA` | `DONE`
 ## OCCDO-027 — Training events
 
 - **Milestone:** M6
-- **Status:** TODO
+- **Status:** DONE
 - **Objective:** `TrainingEvent` for trainings, seminars, orientations.
 - **Files/modules affected:** Prisma, DAL, actions, Capacity Building UI
 - **Dependencies:** OCCDO-013, OCCDO-006
