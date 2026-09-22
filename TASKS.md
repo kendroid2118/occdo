@@ -451,7 +451,7 @@ Statuses: `TODO` | `IN PROGRESS` | `BLOCKED` | `READY FOR QA` | `DONE`
 ## OCCDO-035 — Dashboard summary DAL
 
 - **Milestone:** M10
-- **Status:** TODO
+- **Status:** DONE
 - **Objective:** Aggregations for KPIs and breakdowns from PostgreSQL (counts, by type/sector/status, membership total, YTD deliveries, compliance rollup).
 - **Files/modules affected:** `lib/dal/dashboard.ts`, `lib/actions` or server page data via controller pattern
 - **Dependencies:** OCCDO-017, OCCDO-026, OCCDO-027, OCCDO-032
