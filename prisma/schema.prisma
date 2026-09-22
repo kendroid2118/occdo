@@ -513,3 +513,18 @@ model FundLedgerEntry {
   @@index([assistanceRecordId, entryDate])
   @@index([entryKind])
 }
+
+/// Configurable compliance checklist item. Do not hardcode requirement lists in application logic.
+model ComplianceRequirement {
+  id          String   @id @default(cuid())
+  code        String   @unique
+  name        String
+  description String?
+  frequency   String?
+  sortOrder   Int      @default(0)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([isActive, sortOrder])
+}

@@ -11,14 +11,15 @@ import {
   SEED_ORMOC_BARANGAYS,
   SEED_ASSISTANCE_STATUSES,
   SEED_ASSISTANCE_TYPES,
+  SEED_COMPLIANCE_REQUIREMENTS,
   SEED_PROGRAMS,
   SEED_SERVICE_TYPES,
   type ReferenceSeedRow,
 } from "./reference-data";
 
-async function upsertRows(
-  rows: readonly ReferenceSeedRow[],
-  upsert: (row: ReferenceSeedRow) => Promise<unknown>,
+async function upsertRows<T extends ReferenceSeedRow>(
+  rows: readonly T[],
+  upsert: (row: T) => Promise<unknown>,
 ): Promise<void> {
   for (const row of rows) {
     await upsert(row);
@@ -190,6 +191,23 @@ export async function seedCooperativeReferenceData(
       update: {
         name: row.name,
         sortOrder: row.sortOrder,
+      },
+    }),
+  );
+
+  await upsertRows(SEED_COMPLIANCE_REQUIREMENTS, (row) =>
+    prisma.complianceRequirement.upsert({
+      where: { code: row.code },
+      create: {
+        code: row.code,
+        name: row.name,
+        sortOrder: row.sortOrder,
+        frequency: row.frequency,
+      },
+      update: {
+        name: row.name,
+        sortOrder: row.sortOrder,
+        frequency: row.frequency,
       },
     }),
   );

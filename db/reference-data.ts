@@ -64,6 +64,15 @@ export const SEED_ASSISTANCE_STATUSES: readonly ReferenceSeedRow[] = [
   { code: "RELEASED", name: "Released", sortOrder: 3 },
 ];
 
+/** Labeled demo fixtures. Runtime checklist comes from PostgreSQL, not application constants. */
+export const SEED_COMPLIANCE_REQUIREMENTS: readonly (ReferenceSeedRow & {
+  frequency: string;
+})[] = [
+  { code: "DEMO-CDA-REPORT", name: "Demo CDA Report", sortOrder: 1, frequency: "ANNUAL" },
+  { code: "DEMO-GA", name: "Demo General Assembly", sortOrder: 2, frequency: "ANNUAL" },
+  { code: "DEMO-AUDIT", name: "Demo External Audit", sortOrder: 3, frequency: "ANNUAL" },
+];
+
 export const SEED_OFFICER_POSITIONS: readonly ReferenceSeedRow[] = [
   { code: "CHAIR", name: "Chairperson", sortOrder: 1 },
   { code: "VICE-CHAIR", name: "Vice Chairperson", sortOrder: 2 },

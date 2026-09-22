@@ -399,7 +399,7 @@ Statuses: `TODO` | `IN PROGRESS` | `BLOCKED` | `READY FOR QA` | `DONE`
 ## OCCDO-031 — Configurable compliance requirements
 
 - **Milestone:** M8
-- **Status:** TODO
+- **Status:** DONE
 - **Objective:** `ComplianceRequirement` master data; no hardcoded checklist in logic.
 - **Files/modules affected:** Prisma, DAL
 - **Dependencies:** OCCDO-016
