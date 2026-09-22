@@ -1,0 +1,1346 @@
+---
+
+description: Core project architecture, security, coding, database, testing, and performance rules
+globs:
+
+* "**/*"
+  alwaysApply: true
+
+---
+
+# OCCDO — Cursor AI Development Rules
+
+## 1. Project Overview
+
+OCCDO is an internal Cooperative Management Information System for the Ormoc City Cooperatives Development Office (LGU Ormoc). OCCDO personnel and administrators use it to maintain cooperative master records and related registration/accreditation, membership, programs and services, trainings, financial assistance, compliance, documents, reports, calendar, and system administration. The Cooperative is the central domain entity; other modules reference it rather than duplicating cooperative data. Classifications (type, sector, status, programs, requirements, document types) are configurable reference data, not hardcoded application constants. Dashboard figures must come from the database. See `docs/` and `TASKS.md` for scope, architecture, and the implementation backlog.
+
+These rules define the mandatory architecture, security practices, coding conventions, and development workflow for this project.
+
+Cursor must treat this file as the source of truth when generating, modifying, reviewing, or refactoring code.
+
+When an existing implementation conflicts with these rules, do not silently introduce a second pattern. Inspect the existing architecture first and either:
+
+1. follow the established compliant pattern, or
+2. explicitly identify the conflict before performing a significant architectural change.
+
+---
+
+# 2. Core Development Principles
+
+Follow these principles for every task:
+
+* Prefer simple, maintainable solutions over unnecessary abstraction.
+* Preserve existing working behavior unless the task explicitly requires changing it.
+* Do not rewrite unrelated code.
+* Do not introduce a new framework, ORM, authentication system, validation library, or architectural pattern without a clear requirement.
+* Reuse existing utilities, components, schemas, DAL functions, and conventions before creating new ones.
+* Keep changes scoped to the requested task.
+* Maintain backward compatibility unless breaking changes are explicitly authorized.
+* Never expose secrets, credentials, internal implementation details, or sensitive data.
+* Validate all external input.
+* Enforce authorization server-side.
+* Never trust client-side authorization checks.
+* Prefer secure defaults and fail closed.
+* Do not weaken security controls to make a feature work.
+
+Before implementing a substantial change, inspect the relevant existing files and understand the current data flow.
+
+---
+
+# 3. Tech Stack
+
+## Frontend & UI
+
+* Framework: Next.js 15
+* Router: App Router
+* React: React 19
+* Language: TypeScript
+* TypeScript mode: strict
+* Styling: Tailwind CSS
+* UI primitives: Radix UI
+* Icons: Lucide React (`lucide-react`)
+
+TypeScript requirements:
+
+```json
+{
+  "compilerOptions": {
+    "strict": true,
+    "noImplicitAny": true
+  }
+}
+```
+
+Rules:
+
+* Never introduce `any`.
+* Prefer `unknown` for untrusted values.
+* Narrow unknown values using Zod or explicit type guards.
+* Do not suppress TypeScript errors simply to make the build pass.
+* Avoid `@ts-ignore`.
+* Use `@ts-expect-error` only when absolutely necessary and document why.
+
+---
+
+# 4. Backend & Server Layer
+
+Use:
+
+* Next.js Server Actions
+* React Server Components
+* Route Handlers when HTTP endpoints are genuinely required
+* Node.js 20+
+
+Server Components are the default.
+
+Use `"use client"` only when the component genuinely requires browser-side functionality such as:
+
+* state
+* effects
+* event handlers
+* browser APIs
+* interactive UI libraries
+
+Do not convert an entire page to a Client Component when only a small child component requires interactivity.
+
+---
+
+# 5. Validation
+
+Use Zod for validation across all application boundaries.
+
+No unvalidated external input may cross into the business or data layer.
+
+Validate:
+
+* Server Action input
+* Route Handler input
+* URL/query parameters
+* form data
+* device payloads
+* webhook payloads
+* environment variables
+* third-party API responses where appropriate
+
+Preferred flow:
+
+```text
+Request
+   ↓
+Authentication
+   ↓
+Rate Limit
+   ↓
+Zod Validation
+   ↓
+Authorization / RBAC
+   ↓
+Business Logic
+   ↓
+DAL
+   ↓
+Database
+```
+
+Validation errors must return structured, typed errors.
+
+Do not leak internal stack traces, SQL errors, secrets, or sensitive implementation details to clients.
+
+---
+
+# 6. Database
+
+## Database Engine
+
+PostgreSQL
+
+## ORM
+
+Prisma ORM v6+
+
+## Database Rules
+
+All database access must go through:
+
+```text
+lib/dal/
+```
+
+Only DAL modules may directly import the Prisma client.
+
+Forbidden:
+
+```text
+page.tsx → Prisma
+component.tsx → Prisma
+Server Action → Prisma
+Route Handler → Prisma
+```
+
+Required:
+
+```text
+View
+ ↓
+Controller
+ ↓
+DAL
+ ↓
+Prisma
+ ↓
+PostgreSQL
+```
+
+Use explicit `select` statements when possible rather than retrieving unnecessary fields.
+
+Never return sensitive fields unless explicitly required.
+
+Examples include:
+
+* password hashes
+* authentication secrets
+* API keys
+* reset tokens
+* internal security metadata
+
+---
+
+# 7. Transactions
+
+All multi-step write operations that must succeed or fail together must use:
+
+```ts
+prisma.$transaction(...)
+```
+
+Examples:
+
+* create parent + child records
+* billing transactions
+* payment posting
+* inventory adjustments
+* account creation with related records
+* audit-sensitive changes
+* multi-table updates
+
+Do not manually attempt rollback logic when a database transaction can guarantee atomicity.
+
+DAL functions participating in a transaction should accept the appropriate Prisma transaction client when necessary.
+
+---
+
+# 8. Migrations & Seeding
+
+Use Prisma migrations.
+
+```bash
+prisma migrate
+```
+
+Seed script:
+
+```text
+db/seed.ts
+```
+
+Never manually modify a production database schema without a migration.
+
+Do not delete or rewrite historical migrations that may already have been deployed.
+
+For schema changes:
+
+1. update `prisma/schema.prisma`
+2. generate a migration
+3. review the generated SQL
+4. test against development data
+5. verify backward compatibility
+6. run automated tests
+7. deploy migration through the normal deployment process
+
+Seed data must never contain real production credentials or sensitive information.
+
+---
+
+# 9. MVC Architecture
+
+Next.js does not provide native MVC separation, so enforce it explicitly.
+
+## Model
+
+Locations:
+
+```text
+prisma/schema.prisma
+lib/dal/*.ts
+```
+
+Responsibilities:
+
+* schema definitions
+* queries
+* inserts
+* updates
+* deletes
+* transactions
+* database-specific operations
+
+DAL modules are the only application modules allowed to import Prisma directly.
+
+---
+
+## Controller
+
+Locations:
+
+```text
+lib/actions/*.ts
+app/api/**/route.ts
+```
+
+Responsibilities:
+
+* authentication
+* rate limiting
+* Zod validation
+* authorization
+* RBAC
+* business orchestration
+* calling DAL functions
+* response shaping
+* typed error handling
+
+Controllers must not directly access Prisma.
+
+---
+
+## View
+
+Locations:
+
+```text
+app/**/page.tsx
+app/**/layout.tsx
+app/**/*.tsx
+components/**
+```
+
+Responsibilities:
+
+* rendering
+* user interaction
+* calling Server Actions
+* displaying results/errors
+
+Views must never access Prisma or DAL functions directly.
+
+---
+
+# 10. Folder Structure
+
+Use this structure unless an existing project requires a compatible variation:
+
+```text
+app/
+  (routes)/
+    ...
+  api/
+    devices/
+      [...]/route.ts
+
+components/
+  ui/
+  ...
+
+lib/
+  actions/
+  dal/
+  auth/
+  validation/
+  rate-limit.ts
+  env.ts
+
+db/
+  seed.ts
+
+prisma/
+  schema.prisma
+  migrations/
+
+tests/
+  unit/
+  integration/
+  e2e/
+```
+
+Keep feature-specific logic grouped logically.
+
+Avoid giant utility files.
+
+Split modules when responsibilities become unrelated.
+
+---
+
+# 11. Authentication
+
+Use Auth.js v5 / NextAuth.
+
+Authentication is session-based.
+
+For supported reverse-proxy deployments:
+
+```ts
+trustHost: true
+```
+
+Never rely on client-side session state as proof of authorization.
+
+Sensitive actions must verify the authenticated user on the server.
+
+---
+
+# 12. Role-Based Access Control
+
+Supported roles:
+
+```text
+DEVELOPER
+SUPER_ADMIN
+ADMIN
+USER
+```
+
+Use:
+
+```text
+roleActionClient
+requireRole
+```
+
+Follow zero-trust RBAC.
+
+Every protected action must independently verify authorization.
+
+Never assume authorization because:
+
+* a button is hidden
+* a menu item is unavailable
+* the frontend already checked the role
+* the user previously passed another authorization check
+
+Server-side authorization is mandatory.
+
+---
+
+# 13. Authorization Pattern
+
+Preferred Server Action flow:
+
+```text
+roleActionClient
+      ↓
+rate limiting
+      ↓
+Zod parse
+      ↓
+requireRole([...])
+      ↓
+business rules
+      ↓
+DAL
+      ↓
+transaction
+      ↓
+typed result
+```
+
+Where tenant or organization boundaries exist, DAL queries must additionally scope records using the appropriate:
+
+```text
+tenantId
+organizationId
+officeId
+ownerId
+```
+
+This provides defense in depth against IDOR and cross-tenant access.
+
+---
+
+# 14. Security
+
+Security is a core requirement, not a post-development enhancement.
+
+Follow OWASP secure-development principles.
+
+Protect against, where applicable:
+
+* broken access control
+* injection
+* cross-site scripting
+* CSRF
+* SSRF
+* insecure direct object references
+* authentication failures
+* insecure file uploads
+* path traversal
+* mass assignment
+* sensitive data exposure
+* security misconfiguration
+* vulnerable dependencies
+* brute-force attacks
+* credential stuffing
+* API abuse
+
+Never disable a security mechanism simply to fix an implementation issue.
+
+---
+
+# 15. Security Headers
+
+Production deployments must use appropriate security headers.
+
+Include:
+
+* Content-Security-Policy
+* Strict-Transport-Security
+* X-Content-Type-Options
+* Referrer-Policy
+* Permissions-Policy
+
+HSTS target:
+
+```text
+max-age=63072000; includeSubDomains; preload
+```
+
+Force HTTPS in production.
+
+Do not enable HSTS incorrectly in local HTTP development environments.
+
+---
+
+# 16. Secrets Management
+
+Secrets belong in environment variables.
+
+Examples:
+
+```text
+AUTH_SECRET
+DATABASE_URL
+UPSTASH_REDIS_REST_URL
+UPSTASH_REDIS_REST_TOKEN
+SMTP credentials
+SMS credentials
+device API secrets
+scanner integration secrets
+```
+
+Never:
+
+* hardcode secrets
+* commit `.env`
+* print secrets in logs
+* expose secrets to Client Components
+* include secrets in API responses
+* include real credentials in tests
+* place server secrets in `NEXT_PUBLIC_*`
+
+Use constant-time comparison for API keys or secret tokens where appropriate.
+
+If third-party credentials must be stored in the database, encrypt sensitive values and mask them when displayed.
+
+---
+
+# 17. Environment Variables
+
+All environment variables must be accessed through:
+
+```text
+lib/env.ts
+```
+
+Validate them with Zod during application startup.
+
+Do not scatter raw:
+
+```ts
+process.env.*
+```
+
+throughout the codebase.
+
+Example environment configuration:
+
+```env
+DATABASE_URL=
+AUTH_SECRET=
+UPSTASH_REDIS_REST_URL=
+UPSTASH_REDIS_REST_TOKEN=
+```
+
+Integration secrets must also be defined here.
+
+Never commit actual `.env` files.
+
+Maintain:
+
+```text
+.env.example
+```
+
+with safe placeholder values.
+
+---
+
+# 18. Rate Limiting
+
+Preferred implementation:
+
+```text
+@upstash/ratelimit
+```
+
+with:
+
+```text
+Upstash Redis
+```
+
+A compatible self-hosted Redis deployment may also be used.
+
+Use a sliding-window algorithm unless a specific endpoint requires another strategy.
+
+Centralize rate limiting in:
+
+```text
+lib/rate-limit.ts
+```
+
+---
+
+## Rate Limit Tiers
+
+### Public / Unauthenticated Routes
+
+Limit by:
+
+```text
+IP address
+```
+
+### Authenticated Server Actions
+
+Limit by:
+
+```text
+userId
+```
+
+### Device APIs
+
+Limit by:
+
+```text
+device key / device ID
+```
+
+Use tighter limits for automated ingestion endpoints.
+
+Repeated failures should trigger progressively stronger throttling where appropriate.
+
+### Authentication Endpoints
+
+Apply aggressive limits to:
+
+* login
+* password reset
+* OTP verification
+* API key verification
+* account recovery
+
+Where appropriate combine:
+
+```text
+IP + identifier
+```
+
+to reduce brute-force and credential-stuffing attacks.
+
+---
+
+# 19. Rate Limit Enforcement
+
+Rate limiting must happen before expensive operations and before database access whenever practical.
+
+Example:
+
+```text
+Request
+ ↓
+Rate Limit
+ ↓
+Authentication / Validation
+ ↓
+Database
+```
+
+A limit violation must return a typed error.
+
+Never silently discard the request.
+
+---
+
+# 20. API Architecture
+
+UI-to-backend communication should primarily use type-safe Server Actions.
+
+Do not create REST endpoints simply because REST is familiar.
+
+Use Route Handlers when required for:
+
+* device integrations
+* webhooks
+* external systems
+* biometric devices
+* scheduled jobs
+* machine-to-machine communication
+* third-party callbacks
+
+Device APIs belong under:
+
+```text
+app/api/
+```
+
+Example:
+
+```text
+app/api/devices/[deviceId]/logs/route.ts
+```
+
+---
+
+# 21. Device Ingestion
+
+Automated device endpoints must implement appropriate:
+
+* authentication
+* API-key validation
+* rate limiting
+* payload validation
+* timestamp validation where applicable
+* replay protection where applicable
+* request-size limits
+* audit logging
+* idempotency
+
+Never trust a device merely because it is on an internal network.
+
+---
+
+# 22. Error Handling
+
+Use structured application errors.
+
+Distinguish internally between:
+
+* validation error
+* authentication error
+* authorization error
+* rate-limit error
+* not-found error
+* conflict error
+* business-rule violation
+* infrastructure/database failure
+
+Client-facing responses must not reveal sensitive internal details.
+
+Log enough context for debugging without logging secrets or unnecessary PII.
+
+---
+
+# 23. Audit Logging
+
+Security-sensitive and business-critical actions should generate audit records.
+
+Examples:
+
+* login/security events
+* role changes
+* user creation
+* user disabling
+* password reset
+* configuration changes
+* payment posting/reversal
+* API credential changes
+* administrative overrides
+* destructive operations
+
+Where useful record:
+
+```text
+actor
+action
+entity type
+entity ID
+timestamp
+source
+before/after metadata
+```
+
+Never store passwords, authentication tokens, or raw secrets in audit logs.
+
+---
+
+# 24. Coding Conventions
+
+Mandatory rules:
+
+* no `any`
+* prefer `unknown` for untrusted input
+* validate boundaries with Zod
+* use explicit return types for important service/DAL functions
+* use async/await consistently
+* avoid duplicated business logic
+* reuse shared schemas
+* reuse existing components
+* keep functions focused
+* prefer descriptive names
+* avoid premature abstractions
+* remove dead code
+* remove unused imports
+* do not leave debugging `console.log` statements in production code
+
+Do not create abstractions merely to reduce line count.
+
+Readability and maintainability take priority.
+
+---
+
+# 25. Server/Client Boundary
+
+Server Components are the default.
+
+Never expose:
+
+* database connections
+* Prisma
+* private environment variables
+* authentication secrets
+* service credentials
+* internal API keys
+
+to Client Components.
+
+Keep Client Components as small as practical.
+
+Example:
+
+```text
+Server Page
+ ├── Server data fetching
+ ├── Server authorization
+ └── InteractiveClientComponent
+```
+
+rather than converting the entire page into a Client Component.
+
+---
+
+# 26. Performance
+
+Performance requirements must be considered during implementation rather than added after development.
+
+Apply where appropriate:
+
+* cache expensive/repeated API responses
+* design for stateless horizontal scaling
+* index database columns used frequently in `WHERE`, `JOIN`, and `ORDER BY`
+* use `next/image`
+* prefer WebP/AVIF
+* use loading skeletons
+* cache expensive queries
+* avoid N+1 queries
+* use deliberate Prisma `select` and `include`
+* debounce search/filter inputs
+* dynamically import heavy client components
+* serve static assets through a CDN in production
+* implement server-side caching for hot routes
+* paginate large lists
+* compress HTTP responses
+* minimize API payloads
+* avoid unnecessary React re-renders
+* lazy-load below-the-fold content
+* defer non-critical scripts
+* remove unused dependencies
+* use database connection pooling in production
+
+Production PostgreSQL deployments should use appropriate connection pooling such as PgBouncer where required.
+
+---
+
+# 27. Pagination
+
+Large datasets must be paginated.
+
+Prefer cursor-based pagination over offset pagination for large or frequently changing datasets.
+
+Avoid:
+
+```text
+SELECT everything
+```
+
+and then filtering/paginating in JavaScript.
+
+Filtering, sorting, and pagination should happen at the database level whenever possible.
+
+---
+
+# 28. Database Indexing
+
+Add indexes deliberately based on actual query patterns.
+
+Consider indexes for fields commonly used in:
+
+```text
+WHERE
+JOIN
+ORDER BY
+foreign keys
+tenant filtering
+status filtering
+date filtering
+search
+```
+
+Do not blindly index every field.
+
+Review write overhead and query plans where performance matters.
+
+---
+
+# 29. Caching
+
+Choose the correct caching mechanism for the data.
+
+Options include:
+
+```text
+React cache()
+Next.js caching
+unstable_cache
+Redis
+CDN caching
+```
+
+Never cache sensitive user-specific responses globally.
+
+Define appropriate invalidation behavior whenever caching mutable data.
+
+---
+
+# 30. Testing
+
+## Unit & Integration
+
+Use:
+
+```text
+Vitest
+```
+
+Test important:
+
+* validation schemas
+* business rules
+* DAL behavior
+* authorization rules
+* billing/calculation logic
+* transformation utilities
+
+## End-to-End
+
+Use:
+
+```text
+Playwright
+```
+
+Prioritize critical user workflows.
+
+Examples:
+
+```text
+login
+account creation
+record creation
+editing
+approval
+payment
+administrative workflows
+permission enforcement
+```
+
+Security-sensitive workflows should include negative tests.
+
+---
+
+# 31. Quality Gates
+
+Before considering a development task complete, run the applicable checks:
+
+```bash
+npm run lint
+npm run typecheck
+npm run test
+npm run build
+```
+
+For user-flow changes also run relevant:
+
+```bash
+npm run test:e2e
+```
+
+Do not claim a test passed unless it was actually executed successfully.
+
+If a test cannot be executed, explicitly state that it was not executed.
+
+Never hide failing tests.
+
+---
+
+# 32. Formatting & Tooling
+
+Use:
+
+```text
+ESLint
+Prettier
+TypeScript compiler
+Vitest
+Playwright
+```
+
+Code must pass:
+
+```bash
+tsc --noEmit
+```
+
+before production deployment.
+
+---
+
+# 33. SEO
+
+These requirements apply only to public-facing/indexable routes.
+
+Do not apply public SEO requirements to authenticated internal dashboards.
+
+For public pages:
+
+* unique page title
+* unique meta description
+* correct canonical URL
+* meaningful image alt text
+* exactly one primary `<h1>`
+* logical heading hierarchy
+* descriptive URL slugs
+* internal linking where useful
+* appropriate Open Graph metadata
+* `og:image`
+* `sitemap.xml`
+* `robots.txt`
+* JSON-LD/schema markup where applicable
+* mobile responsiveness
+* HTTPS
+* no accidental `noindex`
+* no broken links
+* optimized images
+* good Core Web Vitals
+
+Target good:
+
+```text
+LCP
+CLS
+INP
+```
+
+Run Lighthouse audits before shipping major public pages.
+
+---
+
+# 34. Accessibility
+
+UI changes must consider accessibility.
+
+Use:
+
+* semantic HTML
+* keyboard navigation
+* visible focus states
+* accessible form labels
+* appropriate ARIA attributes only when semantic HTML is insufficient
+* sufficient contrast
+* descriptive error messages
+* accessible dialogs and menus
+
+Prefer Radix UI accessibility behavior rather than recreating complex interactive primitives manually.
+
+---
+
+# 35. File Upload Security
+
+For upload functionality:
+
+* enforce maximum file size
+* allowlist permitted MIME types
+* validate actual file content where practical
+* generate server-controlled filenames
+* prevent path traversal
+* never trust the original filename
+* store files outside executable paths where applicable
+* prevent uploaded scripts from executing
+* enforce authorization before download
+* protect sensitive documents from public URLs
+
+Do not rely exclusively on file extensions.
+
+---
+
+# 36. Logging
+
+Production logging must never include:
+
+* passwords
+* session tokens
+* API secrets
+* database credentials
+* OTP values
+* authentication cookies
+* full third-party credentials
+
+Avoid unnecessary PII in logs.
+
+Use structured logs where practical.
+
+---
+
+# 37. Dependency Management
+
+Before adding a dependency:
+
+1. determine whether existing dependencies already solve the problem
+2. prefer actively maintained packages
+3. avoid unnecessary large dependencies
+4. verify compatibility with the current Next.js/React stack
+5. consider security and maintenance implications
+
+Do not add a package for trivial functionality that can be implemented safely with the existing stack.
+
+Regularly remove unused dependencies.
+
+---
+
+# 38. Destructive Operations
+
+Never perform destructive operations casually.
+
+Examples:
+
+```text
+DROP TABLE
+DELETE without a restrictive WHERE
+database reset
+migration reset
+mass deletion
+production seed
+force push
+history rewrite
+```
+
+Before executing a potentially destructive command:
+
+1. determine its scope
+2. verify the environment
+3. preserve existing data
+4. prefer reversible changes
+5. explicitly surface the risk when user authorization is required
+
+Never run:
+
+```bash
+prisma migrate reset
+```
+
+against production.
+
+---
+
+# 39. Existing Codebase Rule
+
+Before creating a new implementation:
+
+1. search the repository
+2. inspect related components
+3. inspect existing actions
+4. inspect existing DAL functions
+5. inspect schemas
+6. inspect validation
+7. inspect tests
+8. reuse existing patterns where appropriate
+
+Do not create duplicate:
+
+* components
+* helpers
+* validation schemas
+* database queries
+* authentication logic
+* rate-limit utilities
+* business logic
+
+unless there is a justified reason.
+
+---
+
+# 40. Change Scope
+
+For each requested task:
+
+```text
+Understand
+   ↓
+Inspect
+   ↓
+Plan
+   ↓
+Implement
+   ↓
+Validate
+   ↓
+Test
+   ↓
+Report
+```
+
+Do not perform unrelated refactors during a focused feature or bug-fix task.
+
+A task that requires changing 3 files should not casually become a 30-file rewrite.
+
+---
+
+# 41. Cursor Agent Workflow
+
+For non-trivial tasks, Cursor should first inspect the repository and identify:
+
+```text
+Relevant files
+Existing architecture
+Affected database entities
+Security implications
+Tests affected
+Migration requirements
+```
+
+Then create a concise implementation plan.
+
+Implement the smallest complete solution that satisfies the requirement.
+
+After implementation:
+
+1. inspect the diff
+2. check for unrelated modifications
+3. run lint
+4. run TypeScript validation
+5. run relevant tests
+6. run production build when appropriate
+7. report what changed
+8. report tests actually executed
+9. identify remaining risks or manual verification steps
+
+Do not repeatedly ask for confirmation for routine, reversible implementation steps.
+
+Stop and request explicit approval before destructive or high-impact operations.
+
+---
+
+# 42. Definition of Done
+
+A task is complete only when applicable requirements below are satisfied:
+
+* feature works as requested
+* architecture boundaries are preserved
+* input is validated
+* authentication is enforced
+* authorization is enforced
+* rate limiting is applied where required
+* database writes are transactional where required
+* sensitive data is protected
+* error handling is implemented
+* audit logging exists where appropriate
+* TypeScript passes
+* lint passes
+* relevant tests pass
+* production build passes when applicable
+* no unrelated code was modified
+* no secrets were introduced
+* no debug code remains
+* documentation is updated when behavior/configuration changed
+
+---
+
+# 43. Required Scripts
+
+The project should expose these scripts where applicable:
+
+```bash
+npm run dev
+npm run build
+npm run lint
+npm run typecheck
+npm run test
+npm run test:e2e
+npm run db:migrate
+npm run db:seed
+```
+
+Expected mappings:
+
+```text
+dev          → Next.js development server
+build        → production build
+lint         → ESLint
+typecheck    → tsc --noEmit
+test         → Vitest
+test:e2e     → Playwright
+db:migrate   → Prisma migration
+db:seed      → tsx db/seed.ts
+```
+
+---
+
+# 44. Final Rule
+
+When generating or modifying code:
+
+**Security > correctness > data integrity > maintainability > performance > convenience.**
+
+Never sacrifice authentication, authorization, validation, transaction safety, or data integrity simply to reduce implementation effort.
+
+When requirements are ambiguous, inspect the existing codebase and infer from established project conventions first.
+
+Ask the developer only when the ambiguity could materially affect:
+
+* business behavior
+* data integrity
+* security
+* architecture
+* destructive operations
+* external integrations
+
+Do not invent business rules that are not supported by the existing codebase or task requirements.
