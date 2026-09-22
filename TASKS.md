@@ -151,51 +151,51 @@ Statuses: `TODO` | `IN PROGRESS` | `BLOCKED` | `READY FOR QA` | `DONE`
 ## OCCDO-011 — Auth.js v5 session authentication
 
 - **Milestone:** M1
-- **Status:** TODO
+- **Status:** DONE
 - **Objective:** Configure Auth.js with credentials (or approved provider), `AUTH_SECRET` via `lib/env.ts`, session cookies.
 - **Files/modules affected:** `lib/auth/*`, `app/api/auth/[...nextauth]/route.ts` (Auth.js requirement)
 - **Dependencies:** OCCDO-010, OCCDO-005
 - **Acceptance criteria:** Sign-in establishes a server session; `trustHost` only if reverse-proxy documented.
 - **Security considerations:** Constant-time password compare via a standard hasher (e.g. bcrypt/argon as already common with Auth.js); no secret logging.
-- **Testing requirements:** Integration test of session helper with mocked user.
+- **Testing requirements:** Integration test of session helper with mocked user. `tsc --noEmit` pass; authorize/session/password unit tests pass.
 
 ## OCCDO-012 — Login UI and auth rate limiting
 
 - **Milestone:** M1
-- **Status:** TODO
+- **Status:** DONE
 - **Objective:** Accessible login page; rate limit by IP + identifier via `lib/rate-limit.ts`.
 - **Files/modules affected:** `app/(auth)/login/`, `lib/rate-limit.ts`, login action
 - **Dependencies:** OCCDO-011
 - **Acceptance criteria:** Failed and successful attempts; typed rate-limit error; no user enumeration beyond existing project pattern (generic error preferred).
 - **Security considerations:** Aggressive limits; generic login failure message.
-- **Testing requirements:** Unit test rate-limit error mapping; e2e successful login against seed user.
+- **Testing requirements:** Unit test rate-limit error mapping; e2e successful login against seed user. `tsc --noEmit` pass; login error/rate-limit unit tests pass; login e2e pass.
 
 ## OCCDO-013 — `roleActionClient` and `requireRole`
 
 - **Milestone:** M1
-- **Status:** TODO
+- **Status:** DONE
 - **Objective:** Shared Server Action wrapper: auth → rate limit → Zod → role check.
 - **Files/modules affected:** `lib/auth/action-client.ts`, `lib/auth/rbac.ts`
 - **Dependencies:** OCCDO-011, OCCDO-012
 - **Acceptance criteria:** Unauthorized and forbidden return typed errors; roles match `DEVELOPER | SUPER_ADMIN | ADMIN | USER`.
 - **Security considerations:** Server-side only; no client-trusted role.
-- **Testing requirements:** Unit tests for each deny/allow path.
+- **Testing requirements:** Unit tests for each deny/allow path. `tsc --noEmit` pass; rbac + action-client unit tests pass.
 
 ## OCCDO-014 — Audit log schema and DAL
 
 - **Milestone:** M1
-- **Status:** TODO
+- **Status:** DONE
 - **Objective:** `AuditLog` table and `lib/dal/audit.ts` write helper that strips secret keys from metadata.
 - **Files/modules affected:** Prisma schema, `lib/dal/audit.ts`
 - **Dependencies:** OCCDO-010
 - **Acceptance criteria:** Writer persists actor, action, entity type/id, timestamp, source, metadata; rejects/redacts password-like keys.
 - **Security considerations:** Never store passwords, tokens, or raw secrets.
-- **Testing requirements:** Unit test redaction.
+- **Testing requirements:** Unit test redaction. `prisma validate` pass; migrate status up to date; `tsc --noEmit` pass; audit-redact unit tests pass.
 
 ## OCCDO-015 — Protect dashboard routes
 
 - **Milestone:** M1
-- **Status:** TODO
+- **Status:** DONE
 - **Objective:** Unauthenticated users cannot open dashboard shell; sign-out works.
 - **Files/modules affected:** middleware or layout session check, `app/(dashboard)/layout.tsx`
 - **Dependencies:** OCCDO-011, OCCDO-008
@@ -210,7 +210,7 @@ Statuses: `TODO` | `IN PROGRESS` | `BLOCKED` | `READY FOR QA` | `DONE`
 ## OCCDO-016 — Cooperative reference tables
 
 - **Milestone:** M2
-- **Status:** TODO
+- **Status:** DONE
 - **Objective:** Prisma models for type, sector, status, accreditation status, barangay (shape in `docs/DATABASE_DESIGN.md`).
 - **Files/modules affected:** `prisma/schema.prisma`, DAL list-active helpers, seed from `docs/REFERENCE_DATA.md`
 - **Dependencies:** OCCDO-006
@@ -221,7 +221,7 @@ Statuses: `TODO` | `IN PROGRESS` | `BLOCKED` | `READY FOR QA` | `DONE`
 ## OCCDO-017 — Cooperative master model and indexes
 
 - **Milestone:** M2
-- **Status:** TODO
+- **Status:** DONE
 - **Objective:** `Cooperative` table with initial fields from the project brief and FKs to reference data.
 - **Files/modules affected:** `prisma/schema.prisma`, migration
 - **Dependencies:** OCCDO-016, OCCDO-010
@@ -232,7 +232,7 @@ Statuses: `TODO` | `IN PROGRESS` | `BLOCKED` | `READY FOR QA` | `DONE`
 ## OCCDO-018 — Cooperative validation + DAL + actions
 
 - **Milestone:** M2
-- **Status:** TODO
+- **Status:** DONE
 - **Objective:** Zod schemas; DAL create/update/get/list (paginated, DB-level filter/sort); Server Actions with `requireRole` and audit on create/update.
 - **Files/modules affected:** `lib/validation/cooperative.ts`, `lib/dal/cooperatives.ts`, `lib/actions/cooperatives.ts`
 - **Dependencies:** OCCDO-017, OCCDO-013, OCCDO-014
@@ -243,7 +243,7 @@ Statuses: `TODO` | `IN PROGRESS` | `BLOCKED` | `READY FOR QA` | `DONE`
 ## OCCDO-019 — Cooperative masterlist UI
 
 - **Milestone:** M2
-- **Status:** TODO
+- **Status:** DONE
 - **Objective:** Filterable, paginated masterlist and create/edit form using reference dropdowns.
 - **Files/modules affected:** `app/(dashboard)/cooperatives/**`, reusable table/filter components
 - **Dependencies:** OCCDO-018, OCCDO-008
@@ -258,7 +258,7 @@ Statuses: `TODO` | `IN PROGRESS` | `BLOCKED` | `READY FOR QA` | `DONE`
 ## OCCDO-020 — Cooperative profile page
 
 - **Milestone:** M3
-- **Status:** TODO
+- **Status:** DONE
 - **Objective:** Read-only hub for one cooperative (identity, status, membership counts, remarks) with link to edit.
 - **Files/modules affected:** `app/(dashboard)/cooperatives/[id]/`
 - **Dependencies:** OCCDO-019
@@ -269,7 +269,7 @@ Statuses: `TODO` | `IN PROGRESS` | `BLOCKED` | `READY FOR QA` | `DONE`
 ## OCCDO-021 — Officers / contacts
 
 - **Milestone:** M3
-- **Status:** TODO
+- **Status:** DONE
 - **Objective:** Officer position reference + CRUD scoped to a cooperative.
 - **Files/modules affected:** Prisma, `lib/dal/officers.ts`, actions, profile UI section
 - **Dependencies:** OCCDO-020
@@ -280,7 +280,7 @@ Statuses: `TODO` | `IN PROGRESS` | `BLOCKED` | `READY FOR QA` | `DONE`
 ## OCCDO-022 — Membership snapshots
 
 - **Milestone:** M3
-- **Status:** TODO
+- **Status:** DONE
 - **Objective:** Updating membership counts writes a `MembershipSnapshot` and audits the change.
 - **Files/modules affected:** Prisma, DAL, profile membership form
 - **Dependencies:** OCCDO-020
@@ -295,7 +295,7 @@ Statuses: `TODO` | `IN PROGRESS` | `BLOCKED` | `READY FOR QA` | `DONE`
 ## OCCDO-023 — Accreditation case model and workflow actions
 
 - **Milestone:** M4
-- **Status:** TODO
+- **Status:** DONE
 - **Objective:** `AccreditationCase` with configurable case statuses; changes update cooperative accreditation fields in a transaction and write audit logs.
 - **Files/modules affected:** Prisma, DAL, `lib/actions/accreditation.ts`
 - **Dependencies:** OCCDO-017, OCCDO-013, OCCDO-014
@@ -306,7 +306,7 @@ Statuses: `TODO` | `IN PROGRESS` | `BLOCKED` | `READY FOR QA` | `DONE`
 ## OCCDO-024 — Registration / accreditation UI
 
 - **Milestone:** M4
-- **Status:** TODO
+- **Status:** DONE
 - **Objective:** List and detail of cases; file/decide within RBAC.
 - **Files/modules affected:** `app/(dashboard)/cooperatives/` registration routes
 - **Dependencies:** OCCDO-023

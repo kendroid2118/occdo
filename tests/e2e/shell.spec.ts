@@ -1,7 +1,10 @@
 import { expect, test } from "@playwright/test";
 
+import { demoCredentials, loginAsDemoUser } from "./helpers/demo-login";
+
 test("dashboard shell renders wordmark and collapsible sidebar", async ({ page }) => {
-  await page.goto("/dashboard");
+  test.skip(!demoCredentials().password, "SEED_DEMO_PASSWORD is not set");
+  await loginAsDemoUser(page);
 
   await expect(page.getByText("OCCDO", { exact: true }).first()).toBeVisible();
   await expect(page.getByText("LGU Ormoc")).toBeVisible();

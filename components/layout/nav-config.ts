@@ -37,7 +37,7 @@ export const navigation: NavItem[] = [
     children: [
       { href: "/cooperatives", label: "Cooperative Masterlist" },
       { href: "/cooperatives", label: "Cooperative Profile" },
-      { href: "/cooperatives", label: "Registration / Accreditation" },
+      { href: "/cooperatives/cases", label: "Registration / Accreditation" },
       { href: "/cooperatives", label: "Membership" },
       { href: "/cooperatives", label: "Officers / Contacts" },
     ],
@@ -131,6 +131,24 @@ export const navigation: NavItem[] = [
 export function titleForPath(pathname: string): string {
   if (pathname === "/" || pathname === "/dashboard") {
     return "Dashboard";
+  }
+  if (pathname === "/cooperatives/new") {
+    return "New cooperative";
+  }
+  if (pathname === "/cooperatives/cases/new") {
+    return "File accreditation case";
+  }
+  if (pathname === "/cooperatives/cases") {
+    return "Registration / Accreditation";
+  }
+  if (/^\/cooperatives\/cases\/[^/]+$/.test(pathname)) {
+    return "Accreditation case";
+  }
+  if (/^\/cooperatives\/[^/]+\/edit$/.test(pathname)) {
+    return "Edit cooperative";
+  }
+  if (/^\/cooperatives\/[^/]+$/.test(pathname)) {
+    return "Cooperative profile";
   }
 
   for (const item of navigation) {

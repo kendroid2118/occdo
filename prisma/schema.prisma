@@ -33,8 +33,14 @@ model User {
   isActive      Boolean   @default(true)
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
-  accounts      Account[]
-  sessions      Session[]
+  accounts              Account[]
+  sessions              Session[]
+  auditLogs             AuditLog[]
+  cooperativesCreated   Cooperative[] @relation("CooperativeCreatedBy")
+  cooperativesUpdated   Cooperative[] @relation("CooperativeUpdatedBy")
+  membershipSnapshots          MembershipSnapshot[]
+  accreditationCasesCreated    AccreditationCase[]  @relation("AccreditationCaseCreatedBy")
+  accreditationCasesUpdated    AccreditationCase[]  @relation("AccreditationCaseUpdatedBy")
 }
 
 model Account {
@@ -75,4 +81,241 @@ model VerificationToken {
   expires    DateTime
 
   @@unique([identifier, token])
+}
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  actorId    String?
+  action     String
+  entityType String
+  entityId   String
+  occurredAt DateTime @default(now())
+  source     String   @default("WEB")
+  metadata   Json?
+  actor      User?    @relation(fields: [actorId], references: [id], onDelete: SetNull)
+
+  @@index([actorId])
+  @@index([entityType, entityId])
+  @@index([occurredAt])
+}
+
+model CooperativeType {
+  id            String        @id @default(cuid())
+  code          String        @unique
+  name          String
+  description   String?
+  sortOrder     Int           @default(0)
+  isActive      Boolean       @default(true)
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  cooperatives  Cooperative[]
+
+  @@index([isActive, sortOrder])
+}
+
+model CooperativeSector {
+  id            String        @id @default(cuid())
+  code          String        @unique
+  name          String
+  description   String?
+  sortOrder     Int           @default(0)
+  isActive      Boolean       @default(true)
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  cooperatives  Cooperative[]
+
+  @@index([isActive, sortOrder])
+}
+
+model CooperativeStatus {
+  id            String        @id @default(cuid())
+  code          String        @unique
+  name          String
+  description   String?
+  sortOrder     Int           @default(0)
+  isActive      Boolean       @default(true)
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  cooperatives  Cooperative[]
+
+  @@index([isActive, sortOrder])
+}
+
+model AccreditationStatus {
+  id            String        @id @default(cuid())
+  code          String        @unique
+  name          String
+  description   String?
+  sortOrder     Int           @default(0)
+  isActive      Boolean       @default(true)
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  cooperatives  Cooperative[]
+
+  @@index([isActive, sortOrder])
+}
+
+model Barangay {
+  id            String        @id @default(cuid())
+  code          String        @unique
+  name          String
+  description   String?
+  sortOrder     Int           @default(0)
+  isActive      Boolean       @default(true)
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  cooperatives  Cooperative[]
+
+  @@index([isActive, sortOrder])
+}
+
+model Cooperative {
+  id                    String              @id @default(cuid())
+  cooperativeCode       String              @unique
+  registrationNumber    String?             @unique
+  name                  String
+  acronym               String?
+  typeId                String
+  sectorId              String
+  address               String
+  barangayId            String
+  contactPerson         String
+  contactNumber         String
+  email                 String?
+  dateRegistered        DateTime?
+  dateAccredited        DateTime?
+  accreditationStatusId String
+  statusId              String
+  totalMembers          Int                 @default(0)
+  maleMembers           Int                 @default(0)
+  femaleMembers         Int                 @default(0)
+  remarks               String?
+  createdAt             DateTime            @default(now())
+  updatedAt             DateTime            @updatedAt
+  createdById           String
+  updatedById           String
+  type                  CooperativeType     @relation(fields: [typeId], references: [id], onDelete: Restrict)
+  sector                CooperativeSector   @relation(fields: [sectorId], references: [id], onDelete: Restrict)
+  barangay              Barangay            @relation(fields: [barangayId], references: [id], onDelete: Restrict)
+  accreditationStatus   AccreditationStatus @relation(fields: [accreditationStatusId], references: [id], onDelete: Restrict)
+  status                CooperativeStatus   @relation(fields: [statusId], references: [id], onDelete: Restrict)
+  createdBy             User                @relation("CooperativeCreatedBy", fields: [createdById], references: [id], onDelete: Restrict)
+  updatedBy             User                @relation("CooperativeUpdatedBy", fields: [updatedById], references: [id], onDelete: Restrict)
+  officers              CooperativeOfficer[]
+  membershipSnapshots   MembershipSnapshot[]
+  accreditationCases    AccreditationCase[]
+
+  @@index([name])
+  @@index([typeId])
+  @@index([sectorId])
+  @@index([barangayId])
+  @@index([statusId])
+  @@index([accreditationStatusId])
+  @@index([dateRegistered])
+  @@index([dateAccredited])
+}
+
+model OfficerPosition {
+  id           String                @id @default(cuid())
+  code         String                @unique
+  name         String
+  description  String?
+  sortOrder    Int                   @default(0)
+  isActive     Boolean               @default(true)
+  createdAt    DateTime              @default(now())
+  updatedAt    DateTime              @updatedAt
+  officers     CooperativeOfficer[]
+
+  @@index([isActive, sortOrder])
+}
+
+model CooperativeOfficer {
+  id                String          @id @default(cuid())
+  cooperativeId     String
+  positionId        String
+  fullName          String
+  contactNumber     String?
+  email             String?
+  isPrimaryContact  Boolean         @default(false)
+  startDate         DateTime?
+  endDate           DateTime?
+  isActive          Boolean         @default(true)
+  remarks           String?
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+  cooperative       Cooperative     @relation(fields: [cooperativeId], references: [id], onDelete: Cascade)
+  position          OfficerPosition @relation(fields: [positionId], references: [id], onDelete: Restrict)
+
+  @@index([cooperativeId])
+  @@index([positionId])
+  @@index([cooperativeId, isPrimaryContact])
+}
+
+/// Male + female need not equal total until OCCDO confirms that rule.
+model MembershipSnapshot {
+  id             String      @id @default(cuid())
+  cooperativeId  String
+  asOfDate       DateTime    @db.Date
+  totalMembers   Int         @default(0)
+  maleMembers    Int         @default(0)
+  femaleMembers  Int         @default(0)
+  source         String
+  recordedById   String
+  createdAt      DateTime    @default(now())
+  cooperative    Cooperative @relation(fields: [cooperativeId], references: [id], onDelete: Cascade)
+  recordedBy     User        @relation(fields: [recordedById], references: [id], onDelete: Restrict)
+
+  @@unique([cooperativeId, asOfDate])
+  @@index([cooperativeId])
+}
+
+model AccreditationCaseType {
+  id          String              @id @default(cuid())
+  code        String              @unique
+  name        String
+  description String?
+  sortOrder   Int                 @default(0)
+  isActive    Boolean             @default(true)
+  createdAt   DateTime            @default(now())
+  updatedAt   DateTime            @updatedAt
+  cases       AccreditationCase[]
+
+  @@index([isActive, sortOrder])
+}
+
+model AccreditationCaseStatus {
+  id          String              @id @default(cuid())
+  code        String              @unique
+  name        String
+  description String?
+  sortOrder   Int                 @default(0)
+  isActive    Boolean             @default(true)
+  createdAt   DateTime            @default(now())
+  updatedAt   DateTime            @updatedAt
+  cases       AccreditationCase[]
+
+  @@index([isActive, sortOrder])
+}
+
+model AccreditationCase {
+  id            String                   @id @default(cuid())
+  cooperativeId String
+  typeId        String
+  statusId      String
+  filedAt       DateTime                 @default(now())
+  decidedAt     DateTime?
+  remarks       String?
+  createdAt     DateTime                 @default(now())
+  updatedAt     DateTime                 @updatedAt
+  createdById   String
+  updatedById   String
+  cooperative   Cooperative              @relation(fields: [cooperativeId], references: [id], onDelete: Cascade)
+  type          AccreditationCaseType    @relation(fields: [typeId], references: [id], onDelete: Restrict)
+  status        AccreditationCaseStatus  @relation(fields: [statusId], references: [id], onDelete: Restrict)
+  createdBy     User                     @relation("AccreditationCaseCreatedBy", fields: [createdById], references: [id], onDelete: Restrict)
+  updatedBy     User                     @relation("AccreditationCaseUpdatedBy", fields: [updatedById], references: [id], onDelete: Restrict)
+
+  @@index([cooperativeId])
+  @@index([typeId])
+  @@index([statusId])
 }

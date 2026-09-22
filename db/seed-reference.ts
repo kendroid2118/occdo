@@ -1,0 +1,147 @@
+import type { PrismaClient } from "@prisma/client";
+
+import {
+  SEED_ACCREDITATION_CASE_STATUSES,
+  SEED_ACCREDITATION_CASE_TYPES,
+  SEED_ACCREDITATION_STATUSES,
+  SEED_COOPERATIVE_SECTORS,
+  SEED_COOPERATIVE_STATUSES,
+  SEED_COOPERATIVE_TYPES,
+  SEED_OFFICER_POSITIONS,
+  SEED_ORMOC_BARANGAYS,
+  type ReferenceSeedRow,
+} from "./reference-data";
+
+async function upsertRows(
+  rows: readonly ReferenceSeedRow[],
+  upsert: (row: ReferenceSeedRow) => Promise<unknown>,
+): Promise<void> {
+  for (const row of rows) {
+    await upsert(row);
+  }
+}
+
+/** Upserts maintainable catalogs. Does not change isActive on existing rows. */
+export async function seedCooperativeReferenceData(
+  prisma: PrismaClient,
+): Promise<void> {
+  await upsertRows(SEED_COOPERATIVE_TYPES, (row) =>
+    prisma.cooperativeType.upsert({
+      where: { code: row.code },
+      create: {
+        code: row.code,
+        name: row.name,
+        sortOrder: row.sortOrder,
+      },
+      update: {
+        name: row.name,
+        sortOrder: row.sortOrder,
+      },
+    }),
+  );
+
+  await upsertRows(SEED_COOPERATIVE_STATUSES, (row) =>
+    prisma.cooperativeStatus.upsert({
+      where: { code: row.code },
+      create: {
+        code: row.code,
+        name: row.name,
+        sortOrder: row.sortOrder,
+      },
+      update: {
+        name: row.name,
+        sortOrder: row.sortOrder,
+      },
+    }),
+  );
+
+  await upsertRows(SEED_ACCREDITATION_STATUSES, (row) =>
+    prisma.accreditationStatus.upsert({
+      where: { code: row.code },
+      create: {
+        code: row.code,
+        name: row.name,
+        sortOrder: row.sortOrder,
+      },
+      update: {
+        name: row.name,
+        sortOrder: row.sortOrder,
+      },
+    }),
+  );
+
+  await upsertRows(SEED_COOPERATIVE_SECTORS, (row) =>
+    prisma.cooperativeSector.upsert({
+      where: { code: row.code },
+      create: {
+        code: row.code,
+        name: row.name,
+        sortOrder: row.sortOrder,
+      },
+      update: {
+        name: row.name,
+        sortOrder: row.sortOrder,
+      },
+    }),
+  );
+
+  await upsertRows(SEED_OFFICER_POSITIONS, (row) =>
+    prisma.officerPosition.upsert({
+      where: { code: row.code },
+      create: {
+        code: row.code,
+        name: row.name,
+        sortOrder: row.sortOrder,
+      },
+      update: {
+        name: row.name,
+        sortOrder: row.sortOrder,
+      },
+    }),
+  );
+
+  await upsertRows(SEED_ACCREDITATION_CASE_TYPES, (row) =>
+    prisma.accreditationCaseType.upsert({
+      where: { code: row.code },
+      create: {
+        code: row.code,
+        name: row.name,
+        sortOrder: row.sortOrder,
+      },
+      update: {
+        name: row.name,
+        sortOrder: row.sortOrder,
+      },
+    }),
+  );
+
+  await upsertRows(SEED_ACCREDITATION_CASE_STATUSES, (row) =>
+    prisma.accreditationCaseStatus.upsert({
+      where: { code: row.code },
+      create: {
+        code: row.code,
+        name: row.name,
+        sortOrder: row.sortOrder,
+      },
+      update: {
+        name: row.name,
+        sortOrder: row.sortOrder,
+      },
+    }),
+  );
+
+  await upsertRows(SEED_ORMOC_BARANGAYS, (row) =>
+    prisma.barangay.upsert({
+      where: { code: row.code },
+      create: {
+        code: row.code,
+        name: row.name,
+        sortOrder: row.sortOrder,
+      },
+      update: {
+        name: row.name,
+        sortOrder: row.sortOrder,
+      },
+    }),
+  );
+}
