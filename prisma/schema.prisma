@@ -68,6 +68,8 @@ model User {
   assistanceRecordsCreated     AssistanceRecord[] @relation("AssistanceRecordCreatedBy")
   assistanceRecordsUpdated     AssistanceRecord[] @relation("AssistanceRecordUpdatedBy")
   fundLedgerEntriesRecorded    FundLedgerEntry[]
+  complianceRecordsCreated     ComplianceRecord[] @relation("ComplianceRecordCreatedBy")
+  complianceRecordsVerified    ComplianceRecord[] @relation("ComplianceRecordVerifiedBy")
 }
 
 model Account {
@@ -234,6 +236,7 @@ model Cooperative {
   serviceDeliveries     ServiceDelivery[]
   trainingParticipants  TrainingParticipant[]
   assistanceRecords     AssistanceRecord[]
+  complianceRecords     ComplianceRecord[]
 
   @@index([name])
   @@index([typeId])
@@ -525,6 +528,48 @@ model ComplianceRequirement {
   isActive    Boolean  @default(true)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+  records     ComplianceRecord[]
 
   @@index([isActive, sortOrder])
+}
+
+model ComplianceStatus {
+  id          String             @id @default(cuid())
+  code        String             @unique
+  name        String
+  description String?
+  sortOrder   Int                @default(0)
+  isActive    Boolean            @default(true)
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+  records     ComplianceRecord[]
+
+  @@index([isActive, sortOrder])
+}
+
+model ComplianceRecord {
+  id               String                 @id @default(cuid())
+  cooperativeId    String
+  requirementId    String
+  reportingPeriod  String
+  dueDate          DateTime
+  submittedDate    DateTime?
+  statusId         String
+  remarks          String?
+  verifiedById     String?
+  verifiedAt       DateTime?
+  createdAt        DateTime               @default(now())
+  updatedAt        DateTime               @updatedAt
+  createdById      String
+  cooperative      Cooperative            @relation(fields: [cooperativeId], references: [id], onDelete: Cascade)
+  requirement      ComplianceRequirement  @relation(fields: [requirementId], references: [id], onDelete: Restrict)
+  status           ComplianceStatus       @relation(fields: [statusId], references: [id], onDelete: Restrict)
+  createdBy        User                   @relation("ComplianceRecordCreatedBy", fields: [createdById], references: [id], onDelete: Restrict)
+  verifiedBy       User?                  @relation("ComplianceRecordVerifiedBy", fields: [verifiedById], references: [id], onDelete: Restrict)
+
+  @@unique([cooperativeId, requirementId, reportingPeriod])
+  @@index([cooperativeId])
+  @@index([requirementId])
+  @@index([statusId])
+  @@index([dueDate])
 }

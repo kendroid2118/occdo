@@ -12,6 +12,7 @@ import {
   SEED_ASSISTANCE_STATUSES,
   SEED_ASSISTANCE_TYPES,
   SEED_COMPLIANCE_REQUIREMENTS,
+  SEED_COMPLIANCE_STATUSES,
   SEED_PROGRAMS,
   SEED_SERVICE_TYPES,
   type ReferenceSeedRow,
@@ -208,6 +209,21 @@ export async function seedCooperativeReferenceData(
         name: row.name,
         sortOrder: row.sortOrder,
         frequency: row.frequency,
+      },
+    }),
+  );
+
+  await upsertRows(SEED_COMPLIANCE_STATUSES, (row) =>
+    prisma.complianceStatus.upsert({
+      where: { code: row.code },
+      create: {
+        code: row.code,
+        name: row.name,
+        sortOrder: row.sortOrder,
+      },
+      update: {
+        name: row.name,
+        sortOrder: row.sortOrder,
       },
     }),
   );

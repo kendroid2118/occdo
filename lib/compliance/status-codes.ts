@@ -1,0 +1,5 @@
+export const COMPLIANCE_STATUS_CODES = {
+  PENDING: "PENDING",
+  SUBMITTED: "SUBMITTED",
+  VERIFIED: "VERIFIED",
+} as const;

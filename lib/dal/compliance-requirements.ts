@@ -82,8 +82,9 @@ export async function getComplianceRequirementById(
 
 export async function requireActiveComplianceRequirement(
   id: string,
+  db: Prisma.TransactionClient | typeof prisma = prisma,
 ): Promise<ComplianceRequirementRecord> {
-  const row = await prisma.complianceRequirement.findUnique({
+  const row = await db.complianceRequirement.findUnique({
     where: { id },
     select: requirementSelect,
   });

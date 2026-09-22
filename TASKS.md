@@ -410,7 +410,7 @@ Statuses: `TODO` | `IN PROGRESS` | `BLOCKED` | `READY FOR QA` | `DONE`
 ## OCCDO-032 — Compliance records
 
 - **Milestone:** M8
-- **Status:** TODO
+- **Status:** DONE
 - **Objective:** Records with period, due/submitted dates, status, remarks, optional document, verifier fields.
 - **Files/modules affected:** Prisma, DAL, actions, Monitoring UI
 - **Dependencies:** OCCDO-031, OCCDO-017, OCCDO-014

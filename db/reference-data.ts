@@ -73,6 +73,12 @@ export const SEED_COMPLIANCE_REQUIREMENTS: readonly (ReferenceSeedRow & {
   { code: "DEMO-AUDIT", name: "Demo External Audit", sortOrder: 3, frequency: "ANNUAL" },
 ];
 
+export const SEED_COMPLIANCE_STATUSES: readonly ReferenceSeedRow[] = [
+  { code: "PENDING", name: "Pending", sortOrder: 1 },
+  { code: "SUBMITTED", name: "Submitted", sortOrder: 2 },
+  { code: "VERIFIED", name: "Verified", sortOrder: 3 },
+];
+
 export const SEED_OFFICER_POSITIONS: readonly ReferenceSeedRow[] = [
   { code: "CHAIR", name: "Chairperson", sortOrder: 1 },
   { code: "VICE-CHAIR", name: "Vice Chairperson", sortOrder: 2 },
