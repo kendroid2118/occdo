@@ -358,7 +358,7 @@ Statuses: `TODO` | `IN PROGRESS` | `BLOCKED` | `READY FOR QA` | `DONE`
 ## OCCDO-028 — Training participants
 
 - **Milestone:** M6
-- **Status:** TODO
+- **Status:** DONE
 - **Objective:** Participants linked to events and optionally to a cooperative.
 - **Files/modules affected:** `TrainingParticipant`, UI, DAL
 - **Dependencies:** OCCDO-027, OCCDO-017

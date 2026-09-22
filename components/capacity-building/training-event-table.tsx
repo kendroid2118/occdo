@@ -43,7 +43,14 @@ export function TrainingEventTable({ items, canWrite }: TrainingEventTableProps)
         <tbody>
           {items.map((row) => (
             <tr className="border-b border-slate-100 last:border-0" key={row.id}>
-              <td className="px-4 py-3 font-medium text-slate-900">{row.title}</td>
+              <td className="px-4 py-3 font-medium text-slate-900">
+                <Link
+                  className="text-occdo-800 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-occdo-700"
+                  href={`/capacity-building/${row.id}`}
+                >
+                  {row.title}
+                </Link>
+              </td>
               <td className="px-4 py-3 text-slate-700">
                 {TRAINING_KIND_LABEL[row.kind] ?? row.kind}
               </td>

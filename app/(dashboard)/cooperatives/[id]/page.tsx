@@ -3,9 +3,11 @@ import { notFound } from "next/navigation";
 
 import { CooperativeOfficers } from "@/components/cooperatives/cooperative-officers";
 import { CooperativeProfile } from "@/components/cooperatives/cooperative-profile";
+import { CooperativeTrainingEvents } from "@/components/cooperatives/cooperative-training-events";
 import { getCooperativeAction } from "@/lib/actions/cooperatives";
 import { listOfficersAction } from "@/lib/actions/officers";
 import { listCooperativeCatalogsAction } from "@/lib/actions/reference";
+import { listTrainingEventsByCooperativeAction } from "@/lib/actions/training-participants";
 import { getCurrentSessionUser } from "@/lib/auth/current-session";
 import { canWriteCooperatives } from "@/lib/cooperatives/access";
 
@@ -21,12 +23,14 @@ export default async function CooperativeProfilePage({
   params,
 }: CooperativeProfilePageProps) {
   const { id } = await params;
-  const [result, officersResult, catalogsResult, sessionUser] = await Promise.all([
-    getCooperativeAction({ id }),
-    listOfficersAction({ cooperativeId: id }),
-    listCooperativeCatalogsAction({}),
-    getCurrentSessionUser(),
-  ]);
+  const [result, officersResult, catalogsResult, eventsResult, sessionUser] =
+    await Promise.all([
+      getCooperativeAction({ id }),
+      listOfficersAction({ cooperativeId: id }),
+      listCooperativeCatalogsAction({}),
+      listTrainingEventsByCooperativeAction({ cooperativeId: id }),
+      getCurrentSessionUser(),
+    ]);
 
   if (!result.ok) {
     if (result.code === "NOT_FOUND" || result.code === "VALIDATION") {
@@ -42,6 +46,7 @@ export default async function CooperativeProfilePage({
   const canWrite = sessionUser ? canWriteCooperatives(sessionUser.role) : false;
   const officers = officersResult.ok ? officersResult.data : [];
   const positions = catalogsResult.ok ? catalogsResult.data.officerPositions : [];
+  const events = eventsResult.ok ? eventsResult.data : [];
 
   return (
     <div className="space-y-6">
@@ -52,6 +57,7 @@ export default async function CooperativeProfilePage({
         officers={officers}
         positions={positions}
       />
+      <CooperativeTrainingEvents events={events} />
     </div>
   );
 }

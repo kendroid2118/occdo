@@ -28,6 +28,13 @@ enum TrainingKind {
   ORIENTATION
 }
 
+/// Constrained attendance value for training participants.
+enum AttendanceStatus {
+  REGISTERED
+  PRESENT
+  ABSENT
+}
+
 model User {
   id            String    @id @default(cuid())
   name          String?
@@ -215,6 +222,7 @@ model Cooperative {
   membershipSnapshots   MembershipSnapshot[]
   accreditationCases    AccreditationCase[]
   serviceDeliveries     ServiceDelivery[]
+  trainingParticipants  TrainingParticipant[]
 
   @@index([name])
   @@index([typeId])
@@ -399,9 +407,26 @@ model TrainingEvent {
   serviceType    ServiceType? @relation(fields: [serviceTypeId], references: [id], onDelete: Restrict)
   createdBy      User         @relation("TrainingEventCreatedBy", fields: [createdById], references: [id], onDelete: Restrict)
   updatedBy      User         @relation("TrainingEventUpdatedBy", fields: [updatedById], references: [id], onDelete: Restrict)
+  participants   TrainingParticipant[]
 
   @@index([kind])
   @@index([startAt])
   @@index([programId])
   @@index([serviceTypeId])
+}
+
+model TrainingParticipant {
+  id                String            @id @default(cuid())
+  trainingEventId   String
+  cooperativeId     String?
+  fullName          String
+  attendanceStatus  AttendanceStatus  @default(REGISTERED)
+  contactNumber     String?
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+  trainingEvent     TrainingEvent     @relation(fields: [trainingEventId], references: [id], onDelete: Cascade)
+  cooperative       Cooperative?      @relation(fields: [cooperativeId], references: [id], onDelete: Restrict)
+
+  @@index([trainingEventId])
+  @@index([cooperativeId])
 }
