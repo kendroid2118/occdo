@@ -321,7 +321,7 @@ Statuses: `TODO` | `IN PROGRESS` | `BLOCKED` | `READY FOR QA` | `DONE`
 ## OCCDO-025 — Program and service type catalogs
 
 - **Milestone:** M5
-- **Status:** TODO
+- **Status:** DONE
 - **Objective:** Configurable `Program` and `ServiceType` with DAL/admin-ready models (settings UI may wait for M13).
 - **Files/modules affected:** Prisma, seed fixtures labeled demo, DAL
 - **Dependencies:** OCCDO-016

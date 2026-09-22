@@ -9,6 +9,8 @@ import {
   SEED_COOPERATIVE_TYPES,
   SEED_OFFICER_POSITIONS,
   SEED_ORMOC_BARANGAYS,
+  SEED_PROGRAMS,
+  SEED_SERVICE_TYPES,
   type ReferenceSeedRow,
 } from "./reference-data";
 
@@ -117,6 +119,36 @@ export async function seedCooperativeReferenceData(
 
   await upsertRows(SEED_ACCREDITATION_CASE_STATUSES, (row) =>
     prisma.accreditationCaseStatus.upsert({
+      where: { code: row.code },
+      create: {
+        code: row.code,
+        name: row.name,
+        sortOrder: row.sortOrder,
+      },
+      update: {
+        name: row.name,
+        sortOrder: row.sortOrder,
+      },
+    }),
+  );
+
+  await upsertRows(SEED_PROGRAMS, (row) =>
+    prisma.program.upsert({
+      where: { code: row.code },
+      create: {
+        code: row.code,
+        name: row.name,
+        sortOrder: row.sortOrder,
+      },
+      update: {
+        name: row.name,
+        sortOrder: row.sortOrder,
+      },
+    }),
+  );
+
+  await upsertRows(SEED_SERVICE_TYPES, (row) =>
+    prisma.serviceType.upsert({
       where: { code: row.code },
       create: {
         code: row.code,

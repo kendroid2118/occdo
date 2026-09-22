@@ -37,6 +37,20 @@ export const SEED_ACCREDITATION_CASE_STATUSES: readonly ReferenceSeedRow[] = [
   { code: "DECIDED", name: "Decided", sortOrder: 3 },
 ];
 
+/** Labeled demo fixtures. Runtime catalogs come from PostgreSQL. */
+export const SEED_PROGRAMS: readonly ReferenceSeedRow[] = [
+  { code: "DEMO-LIVELIHOOD", name: "Demo Livelihood Support", sortOrder: 1 },
+  { code: "DEMO-CAPACITY", name: "Demo Capacity Building", sortOrder: 2 },
+  { code: "DEMO-CREDIT", name: "Demo Credit Assistance", sortOrder: 3 },
+];
+
+/** Labeled demo fixtures. Runtime catalogs come from PostgreSQL. */
+export const SEED_SERVICE_TYPES: readonly ReferenceSeedRow[] = [
+  { code: "DEMO-TRAINING", name: "Demo Training", sortOrder: 1 },
+  { code: "DEMO-TECHNICAL", name: "Demo Technical Assistance", sortOrder: 2 },
+  { code: "DEMO-ORIENTATION", name: "Demo Orientation", sortOrder: 3 },
+];
+
 export const SEED_OFFICER_POSITIONS: readonly ReferenceSeedRow[] = [
   { code: "CHAIR", name: "Chairperson", sortOrder: 1 },
   { code: "VICE-CHAIR", name: "Vice Chairperson", sortOrder: 2 },

@@ -85,3 +85,19 @@ export async function listActiveAccreditationCaseStatuses(): Promise<ReferenceRe
     orderBy: activeOrder,
   });
 }
+
+export async function listActivePrograms(): Promise<ReferenceRecord[]> {
+  return prisma.program.findMany({
+    where: { isActive: true },
+    select: referenceSelect,
+    orderBy: activeOrder,
+  });
+}
+
+export async function listActiveServiceTypes(): Promise<ReferenceRecord[]> {
+  return prisma.serviceType.findMany({
+    where: { isActive: true },
+    select: referenceSelect,
+    orderBy: activeOrder,
+  });
+}
