@@ -332,7 +332,7 @@ Statuses: `TODO` | `IN PROGRESS` | `BLOCKED` | `READY FOR QA` | `DONE`
 ## OCCDO-026 — Service delivery records
 
 - **Milestone:** M5
-- **Status:** TODO
+- **Status:** DONE
 - **Objective:** Record services a cooperative received (date, type, optional program, remarks).
 - **Files/modules affected:** Prisma `ServiceDelivery`, DAL, actions, UI under Programs & Services
 - **Dependencies:** OCCDO-025, OCCDO-017

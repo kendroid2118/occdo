@@ -135,6 +135,12 @@ export function titleForPath(pathname: string): string {
   if (pathname === "/cooperatives/new") {
     return "New cooperative";
   }
+  if (pathname === "/programs/new") {
+    return "Record service delivery";
+  }
+  if (pathname === "/programs") {
+    return "Programs & Services";
+  }
   if (pathname === "/cooperatives/cases/new") {
     return "File accreditation case";
   }

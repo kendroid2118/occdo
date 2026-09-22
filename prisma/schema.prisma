@@ -41,6 +41,7 @@ model User {
   membershipSnapshots          MembershipSnapshot[]
   accreditationCasesCreated    AccreditationCase[]  @relation("AccreditationCaseCreatedBy")
   accreditationCasesUpdated    AccreditationCase[]  @relation("AccreditationCaseUpdatedBy")
+  serviceDeliveriesRecorded    ServiceDelivery[]
 }
 
 model Account {
@@ -204,6 +205,7 @@ model Cooperative {
   officers              CooperativeOfficer[]
   membershipSnapshots   MembershipSnapshot[]
   accreditationCases    AccreditationCase[]
+  serviceDeliveries     ServiceDelivery[]
 
   @@index([name])
   @@index([typeId])
@@ -321,27 +323,49 @@ model AccreditationCase {
 }
 
 model Program {
-  id          String   @id @default(cuid())
-  code        String   @unique
+  id          String            @id @default(cuid())
+  code        String            @unique
   name        String
   description String?
-  sortOrder   Int      @default(0)
-  isActive    Boolean  @default(true)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  sortOrder   Int               @default(0)
+  isActive    Boolean           @default(true)
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+  deliveries  ServiceDelivery[]
 
   @@index([isActive, sortOrder])
 }
 
 model ServiceType {
-  id          String   @id @default(cuid())
-  code        String   @unique
+  id          String            @id @default(cuid())
+  code        String            @unique
   name        String
   description String?
-  sortOrder   Int      @default(0)
-  isActive    Boolean  @default(true)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  sortOrder   Int               @default(0)
+  isActive    Boolean           @default(true)
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+  deliveries  ServiceDelivery[]
 
   @@index([isActive, sortOrder])
+}
+
+model ServiceDelivery {
+  id              String       @id @default(cuid())
+  cooperativeId   String
+  programId       String?
+  serviceTypeId   String
+  deliveredAt     DateTime
+  remarks         String?
+  recordedById    String
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+  cooperative     Cooperative  @relation(fields: [cooperativeId], references: [id], onDelete: Cascade)
+  program         Program?     @relation(fields: [programId], references: [id], onDelete: Restrict)
+  serviceType     ServiceType  @relation(fields: [serviceTypeId], references: [id], onDelete: Restrict)
+  recordedBy      User         @relation(fields: [recordedById], references: [id], onDelete: Restrict)
+
+  @@index([cooperativeId])
+  @@index([serviceTypeId, deliveredAt])
+  @@index([deliveredAt])
 }
