@@ -10,6 +10,10 @@ export const envSchema = z.object({
   UPSTASH_REDIS_REST_TOKEN: z.string().min(1).optional(),
   SEED_DEMO_EMAIL: z.string().trim().email().optional(),
   SEED_DEMO_PASSWORD: z.string().min(12).optional(),
+  DOCUMENT_STORAGE_DIR: z.preprocess(
+    (value) => (value === "" || value == null ? undefined : value),
+    z.string().trim().min(1).optional(),
+  ),
 });
 
 export type Env = z.infer<typeof envSchema>;

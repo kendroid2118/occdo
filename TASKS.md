@@ -425,7 +425,7 @@ Statuses: `TODO` | `IN PROGRESS` | `BLOCKED` | `READY FOR QA` | `DONE`
 ## OCCDO-033 — Document types and secure upload
 
 - **Milestone:** M9
-- **Status:** TODO
+- **Status:** DONE
 - **Objective:** `CooperativeDocument` with server-generated stored names, MIME allowlist, size cap, storage outside public.
 - **Files/modules affected:** Prisma, upload action, storage helper, Documents UI
 - **Dependencies:** OCCDO-017, OCCDO-014

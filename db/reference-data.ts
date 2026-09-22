@@ -79,6 +79,13 @@ export const SEED_COMPLIANCE_STATUSES: readonly ReferenceSeedRow[] = [
   { code: "VERIFIED", name: "Verified", sortOrder: 3 },
 ];
 
+/** Labeled demo fixtures. Runtime document types come from PostgreSQL, not application constants. */
+export const SEED_DOCUMENT_TYPES: readonly ReferenceSeedRow[] = [
+  { code: "DEMO-ARTICLES", name: "Demo Articles of Cooperation", sortOrder: 1 },
+  { code: "DEMO-BYLAWS", name: "Demo By-laws", sortOrder: 2 },
+  { code: "DEMO-CDA-CERT", name: "Demo CDA Certificate", sortOrder: 3 },
+];
+
 export const SEED_OFFICER_POSITIONS: readonly ReferenceSeedRow[] = [
   { code: "CHAIR", name: "Chairperson", sortOrder: 1 },
   { code: "VICE-CHAIR", name: "Vice Chairperson", sortOrder: 2 },

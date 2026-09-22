@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import {
   SEED_COOPERATIVE_SECTORS,
+  SEED_DOCUMENT_TYPES,
   SEED_ORMOC_BARANGAYS,
   SEED_PROGRAMS,
   SEED_SERVICE_TYPES,
@@ -30,5 +31,12 @@ describe("OCCDO-016 reference seed rows", () => {
     expect(new Set(serviceCodes).size).toBe(serviceCodes.length);
     expect(programCodes.every((code) => code.startsWith("DEMO-"))).toBe(true);
     expect(serviceCodes.every((code) => code.startsWith("DEMO-"))).toBe(true);
+  });
+
+  it("defines unique labeled demo document type seeds", () => {
+    const codes = SEED_DOCUMENT_TYPES.map((row) => row.code);
+    expect(codes.length).toBeGreaterThan(0);
+    expect(new Set(codes).size).toBe(codes.length);
+    expect(codes.every((code) => code.startsWith("DEMO-"))).toBe(true);
   });
 });

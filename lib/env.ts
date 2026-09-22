@@ -14,4 +14,5 @@ export const env: Env = parseEnv({
   UPSTASH_REDIS_REST_TOKEN: process.env.UPSTASH_REDIS_REST_TOKEN,
   SEED_DEMO_EMAIL: process.env.SEED_DEMO_EMAIL,
   SEED_DEMO_PASSWORD: process.env.SEED_DEMO_PASSWORD,
+  DOCUMENT_STORAGE_DIR: process.env.DOCUMENT_STORAGE_DIR,
 });

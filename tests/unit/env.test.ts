@@ -32,4 +32,12 @@ describe("parseEnv", () => {
       }),
     ).toThrow();
   });
+
+  it("treats an empty DOCUMENT_STORAGE_DIR as unset", () => {
+    const env = parseEnv({
+      ...valid,
+      DOCUMENT_STORAGE_DIR: "",
+    });
+    expect(env.DOCUMENT_STORAGE_DIR).toBeUndefined();
+  });
 });
