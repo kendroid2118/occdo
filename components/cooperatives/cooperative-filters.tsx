@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 import type { CooperativeCatalogs } from "@/lib/actions/reference";
 import type { ListCooperativesInput } from "@/lib/validation/cooperative";
 import { Button } from "@/components/ui/button";
@@ -96,7 +98,7 @@ export function CooperativeFilters({ catalogs, values }: CooperativeFiltersProps
       <div className="flex items-end gap-2">
         <Button type="submit">Apply filters</Button>
         <Button asChild variant="outline">
-          <a href="/cooperatives">Clear</a>
+          <Link href="/cooperatives">Clear</Link>
         </Button>
       </div>
     </form>

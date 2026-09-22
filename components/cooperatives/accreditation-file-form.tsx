@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useActionState } from "react";
 
 import { fileAccreditationCaseFormAction } from "@/lib/actions/accreditation";
@@ -116,7 +117,7 @@ export function AccreditationFileForm({
           {pending ? "Filing…" : "File case"}
         </Button>
         <Button asChild variant="outline">
-          <a href="/cooperatives/cases">Cancel</a>
+          <Link href="/cooperatives/cases">Cancel</Link>
         </Button>
       </div>
     </form>

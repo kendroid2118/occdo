@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useActionState } from "react";
 
 import type { CooperativeCatalogs } from "@/lib/actions/reference";
@@ -339,7 +340,7 @@ export function CooperativeForm({ catalogs, cooperative }: CooperativeFormProps)
           {pending ? "Saving…" : isEdit ? "Save changes" : "Create cooperative"}
         </Button>
         <Button asChild variant="outline">
-          <a href="/cooperatives">Cancel</a>
+          <Link href="/cooperatives">Cancel</Link>
         </Button>
       </div>
     </form>

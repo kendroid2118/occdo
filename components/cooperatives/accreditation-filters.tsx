@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 import type { CooperativeCatalogs } from "@/lib/actions/reference";
 import type { ListAccreditationCasesInput } from "@/lib/validation/accreditation";
 import { Button } from "@/components/ui/button";
@@ -31,7 +33,7 @@ export function AccreditationFilters({ catalogs, values }: AccreditationFiltersP
       <div className="flex items-end gap-2">
         <Button type="submit">Apply filters</Button>
         <Button asChild variant="outline">
-          <a href="/cooperatives/cases">Clear</a>
+          <Link href="/cooperatives/cases">Clear</Link>
         </Button>
       </div>
     </form>
