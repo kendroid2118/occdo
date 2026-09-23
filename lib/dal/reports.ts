@@ -73,6 +73,12 @@ export type ReportFiltersApplied = {
   barangayId?: string;
   statusId?: string;
   accreditationStatusId?: string;
+  assistanceTypeId?: string;
+  programId?: string;
+  serviceTypeId?: string;
+  trainingKind?: "TRAINING" | "SEMINAR" | "ORIENTATION";
+  complianceStatusId?: string;
+  complianceRequirementId?: string;
 };
 
 export type CooperativeReportRow = {
@@ -139,7 +145,7 @@ export type MembershipReport = {
   };
 };
 
-function appliedFilters(input: ReportFiltersInput): ReportFiltersApplied {
+export function appliedFilters(input: ReportFiltersInput): ReportFiltersApplied {
   return {
     timeZone: REPORT_TIME_ZONE,
     dateFrom: input.dateFrom ?? null,
@@ -150,10 +156,16 @@ function appliedFilters(input: ReportFiltersInput): ReportFiltersApplied {
     barangayId: input.barangayId,
     statusId: input.statusId,
     accreditationStatusId: input.accreditationStatusId,
+    assistanceTypeId: input.assistanceTypeId,
+    programId: input.programId,
+    serviceTypeId: input.serviceTypeId,
+    trainingKind: input.trainingKind,
+    complianceStatusId: input.complianceStatusId,
+    complianceRequirementId: input.complianceRequirementId,
   };
 }
 
-function catalogWhere(input: ReportFiltersInput): Prisma.CooperativeWhereInput {
+export function catalogWhere(input: ReportFiltersInput): Prisma.CooperativeWhereInput {
   const where: Prisma.CooperativeWhereInput = {};
   if (input.cooperativeId) {
     where.id = input.cooperativeId;
@@ -202,8 +214,30 @@ function snapshotWhere(input: ReportFiltersInput): Prisma.MembershipSnapshotWher
   return where;
 }
 
-async function assertReportFilters(input: ReportFiltersInput): Promise<void> {
-  const [type, sector, barangay, status, accreditation, cooperative] = await Promise.all([
+export function reportDateTimeRange(
+  input: ReportFiltersInput,
+): { gte: Date; lt: Date } | undefined {
+  if (!input.dateFrom || !input.dateTo) {
+    return undefined;
+  }
+  const range = manilaDateTimeRange(input.dateFrom, input.dateTo);
+  return { gte: range.startInclusive, lt: range.endExclusive };
+}
+
+export async function assertReportFilters(input: ReportFiltersInput): Promise<void> {
+  const [
+    type,
+    sector,
+    barangay,
+    status,
+    accreditation,
+    cooperative,
+    assistanceType,
+    program,
+    serviceType,
+    complianceStatus,
+    complianceRequirement,
+  ] = await Promise.all([
     input.typeId
       ? prisma.cooperativeType.findFirst({
           where: { id: input.typeId, isActive: true },
@@ -240,9 +274,51 @@ async function assertReportFilters(input: ReportFiltersInput): Promise<void> {
           select: { id: true },
         })
       : Promise.resolve({ id: "unused" }),
+    input.assistanceTypeId
+      ? prisma.assistanceType.findUnique({
+          where: { id: input.assistanceTypeId },
+          select: { id: true },
+        })
+      : Promise.resolve({ id: "unused" }),
+    input.programId
+      ? prisma.program.findUnique({
+          where: { id: input.programId },
+          select: { id: true },
+        })
+      : Promise.resolve({ id: "unused" }),
+    input.serviceTypeId
+      ? prisma.serviceType.findUnique({
+          where: { id: input.serviceTypeId },
+          select: { id: true },
+        })
+      : Promise.resolve({ id: "unused" }),
+    input.complianceStatusId
+      ? prisma.complianceStatus.findUnique({
+          where: { id: input.complianceStatusId },
+          select: { id: true },
+        })
+      : Promise.resolve({ id: "unused" }),
+    input.complianceRequirementId
+      ? prisma.complianceRequirement.findUnique({
+          where: { id: input.complianceRequirementId },
+          select: { id: true },
+        })
+      : Promise.resolve({ id: "unused" }),
   ]);
 
-  if (!type || !sector || !barangay || !status || !accreditation || !cooperative) {
+  if (
+    !type ||
+    !sector ||
+    !barangay ||
+    !status ||
+    !accreditation ||
+    !cooperative ||
+    !assistanceType ||
+    !program ||
+    !serviceType ||
+    !complianceStatus ||
+    !complianceRequirement
+  ) {
     throw new ReportFilterError();
   }
 }

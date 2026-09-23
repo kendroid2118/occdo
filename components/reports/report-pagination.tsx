@@ -22,6 +22,14 @@ function hrefForPage(values: ReportFiltersInput, page: number): string {
   if (values.accreditationStatusId) {
     params.set("accreditationStatusId", values.accreditationStatusId);
   }
+  if (values.assistanceTypeId) params.set("assistanceTypeId", values.assistanceTypeId);
+  if (values.programId) params.set("programId", values.programId);
+  if (values.serviceTypeId) params.set("serviceTypeId", values.serviceTypeId);
+  if (values.trainingKind) params.set("trainingKind", values.trainingKind);
+  if (values.complianceStatusId) params.set("complianceStatusId", values.complianceStatusId);
+  if (values.complianceRequirementId) {
+    params.set("complianceRequirementId", values.complianceRequirementId);
+  }
   return `/reports?${params.toString()}`;
 }
 

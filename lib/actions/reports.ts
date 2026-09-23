@@ -9,6 +9,19 @@ import {
 } from "@/lib/auth/action-client";
 import { AUTH_ROLES } from "@/lib/auth/roles";
 import {
+  listActiveAssistanceTypes,
+  listActivePrograms,
+  listActiveServiceTypes,
+  listComplianceRequirements,
+  listComplianceStatuses,
+  listActiveAccreditationStatuses,
+  listActiveBarangays,
+  listActiveCooperativeSectors,
+  listActiveCooperativeStatuses,
+  listActiveCooperativeTypes,
+  type ReferenceRecord,
+} from "@/lib/dal/reference";
+import {
   ReportFilterError,
   getCooperativeReport,
   getMembershipReport,
@@ -17,6 +30,16 @@ import {
   type MembershipReport,
   type ReportCooperativeOption,
 } from "@/lib/dal/reports";
+import {
+  getAssistanceReport,
+  getComplianceReport,
+  getSummaryReport,
+  getTrainingReport,
+  type AssistanceReport,
+  type ComplianceReport,
+  type SummaryReport,
+  type TrainingReport,
+} from "@/lib/dal/reports-operational";
 import { reportFiltersSchema } from "@/lib/validation/reports";
 
 export type {
@@ -29,6 +52,30 @@ export type {
   ReportCooperativeOption,
   ReportFiltersApplied,
 } from "@/lib/dal/reports";
+
+export type {
+  AssistanceReport,
+  AssistanceReportRow,
+  ComplianceReport,
+  ComplianceReportRow,
+  LedgerMoneyTotals,
+  SummaryReport,
+  TrainingReport,
+  TrainingReportRow,
+} from "@/lib/dal/reports-operational";
+
+export type ReportCatalogs = {
+  types: ReferenceRecord[];
+  sectors: ReferenceRecord[];
+  statuses: ReferenceRecord[];
+  accreditationStatuses: ReferenceRecord[];
+  barangays: ReferenceRecord[];
+  assistanceTypes: ReferenceRecord[];
+  programs: ReferenceRecord[];
+  serviceTypes: ReferenceRecord[];
+  complianceStatuses: ReferenceRecord[];
+  complianceRequirements: ReferenceRecord[];
+};
 
 export type ReportActionErrorCode = ActionErrorCode;
 
@@ -67,6 +114,72 @@ const getMembershipReportInner = roleActionClient({
   handler: async ({ input }) => getMembershipReport(input),
 });
 
+const listReportCatalogsInner = roleActionClient({
+  schema: z.object({}),
+  roles: AUTH_ROLES,
+  handler: async (): Promise<ReportCatalogs> => {
+    const [
+      types,
+      sectors,
+      statuses,
+      accreditationStatuses,
+      barangays,
+      assistanceTypes,
+      programs,
+      serviceTypes,
+      complianceStatuses,
+      complianceRequirements,
+    ] = await Promise.all([
+      listActiveCooperativeTypes(),
+      listActiveCooperativeSectors(),
+      listActiveCooperativeStatuses(),
+      listActiveAccreditationStatuses(),
+      listActiveBarangays(),
+      listActiveAssistanceTypes(),
+      listActivePrograms(),
+      listActiveServiceTypes(),
+      listComplianceStatuses(),
+      listComplianceRequirements(),
+    ]);
+    return {
+      types,
+      sectors,
+      statuses,
+      accreditationStatuses,
+      barangays,
+      assistanceTypes,
+      programs,
+      serviceTypes,
+      complianceStatuses,
+      complianceRequirements,
+    };
+  },
+});
+
+const getAssistanceReportInner = roleActionClient({
+  schema: reportFiltersSchema,
+  roles: AUTH_ROLES,
+  handler: async ({ input }) => getAssistanceReport(input),
+});
+
+const getTrainingReportInner = roleActionClient({
+  schema: reportFiltersSchema,
+  roles: AUTH_ROLES,
+  handler: async ({ input }) => getTrainingReport(input),
+});
+
+const getComplianceReportInner = roleActionClient({
+  schema: reportFiltersSchema,
+  roles: AUTH_ROLES,
+  handler: async ({ input }) => getComplianceReport(input),
+});
+
+const getSummaryReportInner = roleActionClient({
+  schema: reportFiltersSchema,
+  roles: AUTH_ROLES,
+  handler: async ({ input }) => getSummaryReport(input),
+});
+
 export async function listReportCooperativeOptionsAction(
   input: unknown,
 ): Promise<ReportActionResult<ReportCooperativeOption[]>> {
@@ -83,4 +196,34 @@ export async function getMembershipReportAction(
   input: unknown,
 ): Promise<ReportActionResult<MembershipReport>> {
   return mapReportAction(() => getMembershipReportInner(input));
+}
+
+export async function listReportCatalogsAction(
+  input: unknown,
+): Promise<ReportActionResult<ReportCatalogs>> {
+  return mapReportAction(() => listReportCatalogsInner(input));
+}
+
+export async function getAssistanceReportAction(
+  input: unknown,
+): Promise<ReportActionResult<AssistanceReport>> {
+  return mapReportAction(() => getAssistanceReportInner(input));
+}
+
+export async function getTrainingReportAction(
+  input: unknown,
+): Promise<ReportActionResult<TrainingReport>> {
+  return mapReportAction(() => getTrainingReportInner(input));
+}
+
+export async function getComplianceReportAction(
+  input: unknown,
+): Promise<ReportActionResult<ComplianceReport>> {
+  return mapReportAction(() => getComplianceReportInner(input));
+}
+
+export async function getSummaryReportAction(
+  input: unknown,
+): Promise<ReportActionResult<SummaryReport>> {
+  return mapReportAction(() => getSummaryReportInner(input));
 }

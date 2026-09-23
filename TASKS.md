@@ -488,7 +488,7 @@ Statuses: `TODO` | `IN PROGRESS` | `BLOCKED` | `READY FOR QA` | `DONE`
 ## OCCDO-038 — Assistance, training, compliance, summary reports
 
 - **Milestone:** M11
-- **Status:** TODO
+- **Status:** DONE
 - **Objective:** Remaining report views using the same filter pipeline.
 - **Files/modules affected:** Reports UI, DAL
 - **Dependencies:** OCCDO-037, OCCDO-026, OCCDO-027, OCCDO-029, OCCDO-032

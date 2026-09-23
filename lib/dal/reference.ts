@@ -117,3 +117,17 @@ export async function listActiveAssistanceStatuses(): Promise<ReferenceRecord[]>
     orderBy: activeOrder,
   });
 }
+
+export async function listComplianceStatuses(): Promise<ReferenceRecord[]> {
+  return prisma.complianceStatus.findMany({
+    select: referenceSelect,
+    orderBy: activeOrder,
+  });
+}
+
+export async function listComplianceRequirements(): Promise<ReferenceRecord[]> {
+  return prisma.complianceRequirement.findMany({
+    select: referenceSelect,
+    orderBy: activeOrder,
+  });
+}

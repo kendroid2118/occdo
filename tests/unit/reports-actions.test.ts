@@ -7,6 +7,10 @@ import type { SessionUser } from "@/lib/auth/session";
 const getCurrentSessionUser = vi.fn();
 const getCooperativeReport = vi.fn();
 const getMembershipReport = vi.fn();
+const getAssistanceReport = vi.fn();
+const getTrainingReport = vi.fn();
+const getComplianceReport = vi.fn();
+const getSummaryReport = vi.fn();
 
 vi.mock("@/lib/auth/current-session", () => ({
   getCurrentSessionUser: () => getCurrentSessionUser(),
@@ -21,9 +25,18 @@ vi.mock("@/lib/dal/reports", () => ({
   listReportCooperativeOptions: vi.fn(),
 }));
 
+vi.mock("@/lib/dal/reports-operational", () => ({
+  getAssistanceReport: (...args: unknown[]) => getAssistanceReport(...args),
+  getTrainingReport: (...args: unknown[]) => getTrainingReport(...args),
+  getComplianceReport: (...args: unknown[]) => getComplianceReport(...args),
+  getSummaryReport: (...args: unknown[]) => getSummaryReport(...args),
+}));
+
 import {
+  getAssistanceReportAction,
   getCooperativeReportAction,
   getMembershipReportAction,
+  getSummaryReportAction,
 } from "@/lib/actions/reports";
 import { resetRateLimitStateForTests } from "@/lib/rate-limit";
 
@@ -41,6 +54,10 @@ describe("report actions", () => {
     getCurrentSessionUser.mockReset();
     getCooperativeReport.mockReset();
     getMembershipReport.mockReset();
+    getAssistanceReport.mockReset();
+    getTrainingReport.mockReset();
+    getComplianceReport.mockReset();
+    getSummaryReport.mockReset();
   });
 
   it("rejects unauthenticated report reads", async () => {
@@ -54,14 +71,25 @@ describe("report actions", () => {
       ok: false,
       code: "UNAUTHORIZED",
     });
+    await expect(getAssistanceReportAction({})).resolves.toEqual({
+      ok: false,
+      code: "UNAUTHORIZED",
+    });
+    await expect(getSummaryReportAction({})).resolves.toEqual({
+      ok: false,
+      code: "UNAUTHORIZED",
+    });
     expect(getCooperativeReport).not.toHaveBeenCalled();
     expect(getMembershipReport).not.toHaveBeenCalled();
+    expect(getAssistanceReport).not.toHaveBeenCalled();
   });
 
   it("allows USER to read reports", async () => {
     getCurrentSessionUser.mockResolvedValue(staffUser);
     getCooperativeReport.mockResolvedValue({ items: [], total: 0 });
     getMembershipReport.mockResolvedValue({ current: { items: [] } });
+    getAssistanceReport.mockResolvedValue({ items: [], ledger: { net: "0.00" } });
+    getSummaryReport.mockResolvedValue({ cooperatives: 0 });
 
     await expect(getCooperativeReportAction({})).resolves.toEqual({
       ok: true,
@@ -70,6 +98,14 @@ describe("report actions", () => {
     await expect(getMembershipReportAction({})).resolves.toEqual({
       ok: true,
       data: { current: { items: [] } },
+    });
+    await expect(getAssistanceReportAction({})).resolves.toEqual({
+      ok: true,
+      data: { items: [], ledger: { net: "0.00" } },
+    });
+    await expect(getSummaryReportAction({})).resolves.toEqual({
+      ok: true,
+      data: { cooperatives: 0 },
     });
   });
 

@@ -1,12 +1,11 @@
 import Link from "next/link";
 
-import type { CooperativeCatalogs } from "@/lib/actions/reference";
-import type { ReportCooperativeOption } from "@/lib/actions/reports";
+import type { ReportCatalogs, ReportCooperativeOption } from "@/lib/actions/reports";
 import { Button } from "@/components/ui/button";
 import type { ReportFiltersInput } from "@/lib/validation/reports";
 
 type ReportFiltersProps = {
-  catalogs: CooperativeCatalogs;
+  catalogs: ReportCatalogs;
   cooperatives: ReportCooperativeOption[];
   values: ReportFiltersInput;
 };
@@ -117,6 +116,57 @@ export function ReportFilters({ catalogs, cooperatives, values }: ReportFiltersP
         name="accreditationStatusId"
         options={catalogs.accreditationStatuses}
         value={values.accreditationStatusId}
+      />
+      <FilterSelect
+        id="assistanceTypeId"
+        label="Assistance type"
+        name="assistanceTypeId"
+        options={catalogs.assistanceTypes}
+        value={values.assistanceTypeId}
+      />
+      <div className="space-y-1.5">
+        <label className="block text-sm font-medium text-slate-800" htmlFor="trainingKind">
+          Training kind
+        </label>
+        <select
+          className="h-10 w-full rounded-md border border-slate-300 bg-white px-3 text-sm text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-occdo-700"
+          defaultValue={values.trainingKind ?? ""}
+          id="trainingKind"
+          name="trainingKind"
+        >
+          <option value="">All</option>
+          <option value="TRAINING">Training</option>
+          <option value="SEMINAR">Seminar</option>
+          <option value="ORIENTATION">Orientation</option>
+        </select>
+      </div>
+      <FilterSelect
+        id="programId"
+        label="Program"
+        name="programId"
+        options={catalogs.programs}
+        value={values.programId}
+      />
+      <FilterSelect
+        id="serviceTypeId"
+        label="Service type"
+        name="serviceTypeId"
+        options={catalogs.serviceTypes}
+        value={values.serviceTypeId}
+      />
+      <FilterSelect
+        id="complianceStatusId"
+        label="Compliance status"
+        name="complianceStatusId"
+        options={catalogs.complianceStatuses}
+        value={values.complianceStatusId}
+      />
+      <FilterSelect
+        id="complianceRequirementId"
+        label="Compliance requirement"
+        name="complianceRequirementId"
+        options={catalogs.complianceRequirements}
+        value={values.complianceRequirementId}
       />
       <div className="flex items-end gap-2">
         <Button type="submit">Apply filters</Button>

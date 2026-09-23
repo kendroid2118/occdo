@@ -35,4 +35,9 @@ describe("reportFiltersSchema", () => {
     expect(reportFiltersSchema.safeParse({ typeId: "" }).success).toBe(true);
     expect(reportFiltersSchema.safeParse({ typeId: "x".repeat(65) }).success).toBe(false);
   });
+
+  it("rejects an unknown training kind", () => {
+    expect(reportFiltersSchema.safeParse({ trainingKind: "WORKSHOP" }).success).toBe(false);
+    expect(reportFiltersSchema.safeParse({ trainingKind: "TRAINING" }).success).toBe(true);
+  });
 });

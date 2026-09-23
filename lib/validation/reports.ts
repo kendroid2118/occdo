@@ -27,6 +27,15 @@ export const reportFiltersSchema = z
     barangayId: optionalFilterIdSchema,
     statusId: optionalFilterIdSchema,
     accreditationStatusId: optionalFilterIdSchema,
+    assistanceTypeId: optionalFilterIdSchema,
+    programId: optionalFilterIdSchema,
+    serviceTypeId: optionalFilterIdSchema,
+    trainingKind: z.preprocess(
+      (value) => (value === "" || value == null ? undefined : value),
+      z.enum(["TRAINING", "SEMINAR", "ORIENTATION"]).optional(),
+    ),
+    complianceStatusId: optionalFilterIdSchema,
+    complianceRequirementId: optionalFilterIdSchema,
     page: z.preprocess(
       (value) => (value === "" || value == null ? undefined : value),
       z.coerce.number().int().min(1).default(1),
