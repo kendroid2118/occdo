@@ -129,13 +129,19 @@ export async function listCalendarLinkOptionsAction(
   return mapCalendarAction(() => linkOptionsInner(input));
 }
 
+function combineDateTime(date: FormDataEntryValue | null, time: FormDataEntryValue | null): string {
+  const day = typeof date === "string" ? date.trim() : "";
+  const clock = typeof time === "string" && time.trim() ? time.trim() : "00:00";
+  return day ? `${day}T${clock}` : "";
+}
+
 function activityFormValues(formData: FormData) {
   return {
     id: formData.get("id"),
     title: formData.get("title"),
     kind: formData.get("kind"),
-    startAt: formData.get("startAt"),
-    endAt: formData.get("endAt"),
+    startAt: combineDateTime(formData.get("startDate"), formData.get("startTime")),
+    endAt: combineDateTime(formData.get("endDate"), formData.get("endTime")),
     location: formData.get("location"),
     remarks: formData.get("remarks"),
     cooperativeId: formData.get("cooperativeId"),

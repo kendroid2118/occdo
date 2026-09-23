@@ -22,6 +22,15 @@ type CalendarActivityFormProps = {
   activity?: CalendarActivityRecord;
 };
 
+function manilaParts(value: Date | string | null | undefined): { date: string; time: string } {
+  if (!value) {
+    return { date: "", time: "" };
+  }
+  const local = utcToManilaDateTimeLocal(value instanceof Date ? value : new Date(value));
+  const [date, time] = local.split("T");
+  return { date: date ?? "", time: time ?? "" };
+}
+
 export function CalendarActivityForm({ links, activity }: CalendarActivityFormProps) {
   const isEdit = Boolean(activity);
   const [state, formAction, pending] = useActionState(
@@ -85,30 +94,53 @@ export function CalendarActivityForm({ links, activity }: CalendarActivityFormPr
           />
         </div>
         <div className="space-y-1.5">
-          <label className="block text-sm font-medium text-slate-800" htmlFor="startAt">
-            Start (Asia/Manila)
+          <label className="block text-sm font-medium text-slate-800" htmlFor="startDate">
+            Start date (Asia/Manila)
           </label>
           <input
             className={fieldClass}
-            defaultValue={activity ? utcToManilaDateTimeLocal(new Date(activity.startAt)) : ""}
-            id="startAt"
-            name="startAt"
+            defaultValue={manilaParts(activity?.startAt).date}
+            id="startDate"
+            name="startDate"
             required
-            type="datetime-local"
+            type="date"
           />
         </div>
         <div className="space-y-1.5">
-          <label className="block text-sm font-medium text-slate-800" htmlFor="endAt">
-            End (Asia/Manila)
+          <label className="block text-sm font-medium text-slate-800" htmlFor="startTime">
+            Start time (Asia/Manila)
           </label>
           <input
             className={fieldClass}
-            defaultValue={
-              activity?.endAt ? utcToManilaDateTimeLocal(new Date(activity.endAt)) : ""
-            }
-            id="endAt"
-            name="endAt"
-            type="datetime-local"
+            defaultValue={manilaParts(activity?.startAt).time || "09:00"}
+            id="startTime"
+            name="startTime"
+            required
+            type="time"
+          />
+        </div>
+        <div className="space-y-1.5">
+          <label className="block text-sm font-medium text-slate-800" htmlFor="endDate">
+            End date (Asia/Manila)
+          </label>
+          <input
+            className={fieldClass}
+            defaultValue={manilaParts(activity?.endAt).date}
+            id="endDate"
+            name="endDate"
+            type="date"
+          />
+        </div>
+        <div className="space-y-1.5">
+          <label className="block text-sm font-medium text-slate-800" htmlFor="endTime">
+            End time (Asia/Manila)
+          </label>
+          <input
+            className={fieldClass}
+            defaultValue={manilaParts(activity?.endAt).time}
+            id="endTime"
+            name="endTime"
+            type="time"
           />
         </div>
         <div className="space-y-1.5">

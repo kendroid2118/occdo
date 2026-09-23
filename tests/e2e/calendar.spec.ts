@@ -35,11 +35,13 @@ test("ADMIN can create a calendar activity and see it listed", async ({ page }) 
 
   await page.getByLabel("Title").fill(title);
   await page.getByLabel("Type").selectOption({ label: "Activity" });
-  await page.getByLabel("Start (Asia/Manila)").fill("2026-09-23T09:00");
+  await page.getByLabel("Start date (Asia/Manila)").fill("2026-09-23");
+  await page.getByLabel("Start time (Asia/Manila)").fill("09:00");
   await page.getByLabel("Location").fill("OCCDO Hall");
   await page.getByRole("button", { name: "Create activity" }).click();
 
-  await expect(page).toHaveURL(/\/calendar/);
+  await expect(page).toHaveURL(/\/calendar$/);
+  await expect(page.getByRole("heading", { name: "Calendar", level: 2 })).toBeVisible();
   await page.goto("/calendar?year=2026&month=9");
   await expect(page.getByRole("cell", { name: title })).toBeVisible();
   await expect(page.getByRole("cell", { name: "Activity", exact: true }).first()).toBeVisible();

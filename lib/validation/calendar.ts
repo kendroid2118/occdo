@@ -33,23 +33,16 @@ const optionalLongTextSchema = z
   .nullable()
   .transform((value) => (value ? value : null));
 
-const manilaDateTimeSchema = z
-  .union([z.date(), z.string()])
-  .transform((value, ctx) => {
-    if (value instanceof Date) {
-      if (Number.isNaN(value.getTime())) {
-        ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Invalid date/time" });
-        return z.NEVER;
-      }
-      return value;
-    }
-    const parsed = parseManilaDateTimeInput(value);
-    if (!parsed) {
-      ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Invalid Asia/Manila date/time" });
-      return z.NEVER;
-    }
-    return parsed;
-  });
+const manilaDateTimeSchema = z.union([
+  z.date().refine((value) => !Number.isNaN(value.getTime()), { message: "Invalid date/time" }),
+  z
+    .string()
+    .min(1)
+    .refine((value) => parseManilaDateTimeInput(value) !== null, {
+      message: "Invalid Asia/Manila date/time",
+    })
+    .transform((value) => parseManilaDateTimeInput(value) as Date),
+]);
 
 const optionalManilaDateTimeSchema = z.preprocess((value) => {
   if (value === "" || value == null) {
