@@ -477,7 +477,7 @@ Statuses: `TODO` | `IN PROGRESS` | `BLOCKED` | `READY FOR QA` | `DONE`
 ## OCCDO-037 — Report filters and cooperative/membership reports
 
 - **Milestone:** M11
-- **Status:** TODO
+- **Status:** DONE
 - **Objective:** Filter by date range, cooperative, type, sector, barangay, status at DB level.
 - **Files/modules affected:** `lib/dal/reports.ts`, `lib/validation/reports.ts`, Reports UI
 - **Dependencies:** OCCDO-017
