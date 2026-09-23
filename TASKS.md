@@ -555,7 +555,7 @@ Statuses: `TODO` | `IN PROGRESS` | `BLOCKED` | `READY FOR QA` | `DONE`
 ## OCCDO-043 — Security headers and production HTTPS assumptions
 
 - **Milestone:** M14
-- **Status:** TODO
+- **Status:** DONE
 - **Objective:** CSP, HSTS (prod only), X-Content-Type-Options, Referrer-Policy, Permissions-Policy.
 - **Files/modules affected:** `next.config.ts` or headers helper
 - **Dependencies:** OCCDO-001
