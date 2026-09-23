@@ -529,7 +529,7 @@ Statuses: `TODO` | `IN PROGRESS` | `BLOCKED` | `READY FOR QA` | `DONE`
 ## OCCDO-041 — User administration
 
 - **Milestone:** M13
-- **Status:** TODO
+- **Status:** DONE
 - **Objective:** Create/disable users, assign one of the four roles; audit role changes.
 - **Files/modules affected:** Settings Users UI, `lib/actions/users.ts`, DAL
 - **Dependencies:** OCCDO-010, OCCDO-013, OCCDO-014

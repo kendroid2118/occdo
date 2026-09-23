@@ -121,7 +121,7 @@ export const navigation: NavItem[] = [
     label: "Settings",
     icon: Settings,
     children: [
-      { href: "/settings", label: "Users" },
+      { href: "/settings/users", label: "Users" },
       { href: "/settings", label: "Roles" },
       { href: "/settings", label: "Reference Data" },
       { href: "/settings", label: "System Configuration" },
@@ -135,6 +135,12 @@ export function titleForPath(pathname: string): string {
   }
   if (pathname === "/calendar/announcements/new") {
     return "New announcement";
+  }
+  if (pathname === "/settings/users/new") {
+    return "New user";
+  }
+  if (/^\/settings\/users\/[^/]+\/edit$/.test(pathname)) {
+    return "Edit user";
   }
   if (pathname === "/capacity-building/new") {
     return "New training event";
