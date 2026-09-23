@@ -25,5 +25,10 @@ export default defineConfig({
     url: process.env.PLAYWRIGHT_BASE_URL ?? "http://127.0.0.1:3001",
     reuseExistingServer: !process.env.CI,
     timeout: 120_000,
+    env: {
+      ...process.env,
+      PLAYWRIGHT: "1",
+      TEST_LOGIN_RATE_LIMIT_MAX: "60",
+    },
   },
 });

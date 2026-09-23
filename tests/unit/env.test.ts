@@ -56,4 +56,36 @@ describe("parseEnv", () => {
       }).CDA_PORTAL_URL,
     ).toBe("https://cda.gov.ph");
   });
+
+  it("accepts TEST_LOGIN_RATE_LIMIT_MAX only in automated tests", () => {
+    expect(parseEnv(valid).TEST_LOGIN_RATE_LIMIT_MAX).toBeUndefined();
+    expect(
+      parseEnv({
+        ...valid,
+        TEST_LOGIN_RATE_LIMIT_MAX: "60",
+      }).TEST_LOGIN_RATE_LIMIT_MAX,
+    ).toBe(60);
+    expect(
+      parseEnv({
+        ...valid,
+        NODE_ENV: "development",
+        PLAYWRIGHT: "1",
+        TEST_LOGIN_RATE_LIMIT_MAX: "60",
+      }).TEST_LOGIN_RATE_LIMIT_MAX,
+    ).toBe(60);
+    expect(() =>
+      parseEnv({
+        ...valid,
+        NODE_ENV: "production",
+        TEST_LOGIN_RATE_LIMIT_MAX: "60",
+      }),
+    ).toThrow();
+    expect(() =>
+      parseEnv({
+        ...valid,
+        NODE_ENV: "development",
+        TEST_LOGIN_RATE_LIMIT_MAX: "60",
+      }),
+    ).toThrow();
+  });
 });

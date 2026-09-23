@@ -16,4 +16,6 @@ export const env: Env = parseEnv({
   SEED_DEMO_PASSWORD: process.env.SEED_DEMO_PASSWORD,
   DOCUMENT_STORAGE_DIR: process.env.DOCUMENT_STORAGE_DIR,
   CDA_PORTAL_URL: process.env.CDA_PORTAL_URL,
+  TEST_LOGIN_RATE_LIMIT_MAX: process.env.TEST_LOGIN_RATE_LIMIT_MAX,
+  PLAYWRIGHT: process.env.PLAYWRIGHT,
 });
