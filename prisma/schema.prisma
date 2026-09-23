@@ -81,6 +81,8 @@ model User {
   documentsVerified            CooperativeDocument[] @relation("DocumentVerifiedBy")
   calendarActivitiesCreated    CalendarActivity[] @relation("CalendarActivityCreatedBy")
   calendarActivitiesUpdated    CalendarActivity[] @relation("CalendarActivityUpdatedBy")
+  announcementsCreated         Announcement[]     @relation("AnnouncementCreatedBy")
+  announcementsUpdated         Announcement[]     @relation("AnnouncementUpdatedBy")
 }
 
 model Account {
@@ -667,4 +669,24 @@ model CalendarActivity {
   @@index([kind])
   @@index([cooperativeId])
   @@index([trainingEventId])
+}
+
+/// Dashboard announcements. Body is stored and rendered as plain text.
+model Announcement {
+  id          String    @id @default(cuid())
+  title       String
+  body        String
+  publishedAt DateTime
+  expiresAt   DateTime?
+  isActive    Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  createdById String
+  updatedById String
+  createdBy   User      @relation("AnnouncementCreatedBy", fields: [createdById], references: [id], onDelete: Restrict)
+  updatedBy   User      @relation("AnnouncementUpdatedBy", fields: [updatedById], references: [id], onDelete: Restrict)
+
+  @@index([publishedAt])
+  @@index([isActive, publishedAt])
+  @@index([expiresAt])
 }

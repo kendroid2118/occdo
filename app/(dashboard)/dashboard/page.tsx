@@ -1,9 +1,11 @@
 import type { Metadata } from "next";
 
+import { DashboardAnnouncements } from "@/components/dashboard/dashboard-announcements";
 import { DashboardBarList } from "@/components/dashboard/dashboard-bar-list";
 import { DashboardCdaCard } from "@/components/dashboard/dashboard-cda-card";
 import { DashboardEmptyPanel } from "@/components/dashboard/dashboard-empty-panel";
 import { DashboardKpiCards } from "@/components/dashboard/dashboard-kpi-cards";
+import { listPublishedAnnouncementsAction } from "@/lib/actions/announcements";
 import { getDashboardSummaryAction } from "@/lib/actions/dashboard";
 import { getCdaPortalUrl } from "@/lib/dashboard/cda-portal";
 
@@ -14,6 +16,7 @@ export const metadata: Metadata = {
 export default async function DashboardPage() {
   const cdaPortalUrl = getCdaPortalUrl();
   const result = await getDashboardSummaryAction({});
+  const announcementsResult = await listPublishedAnnouncementsAction({});
 
   return (
     <div className="space-y-8">
@@ -80,9 +83,8 @@ export default async function DashboardPage() {
               message="No upcoming activities are listed yet. Calendar records will appear here when that module is available."
               title="Upcoming activities"
             />
-            <DashboardEmptyPanel
-              message="No announcements are listed yet."
-              title="Announcements"
+            <DashboardAnnouncements
+              items={announcementsResult.ok ? announcementsResult.data : []}
             />
           </section>
         </>

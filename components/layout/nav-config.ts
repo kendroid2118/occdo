@@ -113,6 +113,7 @@ export const navigation: NavItem[] = [
       { href: "/calendar", label: "Activities" },
       { href: "/calendar", label: "Trainings" },
       { href: "/calendar", label: "Deadlines" },
+      { href: "/calendar/announcements", label: "Announcements" },
     ],
   },
   {
@@ -131,6 +132,9 @@ export const navigation: NavItem[] = [
 export function titleForPath(pathname: string): string {
   if (pathname === "/" || pathname === "/dashboard") {
     return "Dashboard";
+  }
+  if (pathname === "/calendar/announcements/new") {
+    return "New announcement";
   }
   if (pathname === "/capacity-building/new") {
     return "New training event";

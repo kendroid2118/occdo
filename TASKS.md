@@ -514,7 +514,7 @@ Statuses: `TODO` | `IN PROGRESS` | `BLOCKED` | `READY FOR QA` | `DONE`
 ## OCCDO-040 — Announcements
 
 - **Milestone:** M12
-- **Status:** TODO
+- **Status:** DONE
 - **Objective:** Simple announcements for the dashboard widget.
 - **Files/modules affected:** Prisma, DAL, Settings or Calendar admin UI
 - **Dependencies:** OCCDO-013
