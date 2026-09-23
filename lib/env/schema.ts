@@ -14,6 +14,10 @@ export const envSchema = z.object({
     (value) => (value === "" || value == null ? undefined : value),
     z.string().trim().min(1).optional(),
   ),
+  CDA_PORTAL_URL: z.preprocess(
+    (value) => (value === "" || value == null ? undefined : value),
+    z.string().trim().url().optional(),
+  ),
 });
 
 export type Env = z.infer<typeof envSchema>;

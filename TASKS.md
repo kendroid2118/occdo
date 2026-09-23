@@ -462,7 +462,7 @@ Statuses: `TODO` | `IN PROGRESS` | `BLOCKED` | `READY FOR QA` | `DONE`
 ## OCCDO-036 — Dashboard UI widgets
 
 - **Milestone:** M10
-- **Status:** TODO
+- **Status:** DONE
 - **Objective:** Reusable cards/charts; upcoming activities and announcements; **CDA Portal** external shortcut from `SystemConfig`.
 - **Files/modules affected:** `components/dashboard/*`, `app/(dashboard)/dashboard/page.tsx`
 - **Dependencies:** OCCDO-035, OCCDO-008

@@ -40,4 +40,20 @@ describe("parseEnv", () => {
     });
     expect(env.DOCUMENT_STORAGE_DIR).toBeUndefined();
   });
+
+  it("accepts an optional CDA Portal URL and treats empty as unset", () => {
+    expect(parseEnv(valid).CDA_PORTAL_URL).toBeUndefined();
+    expect(
+      parseEnv({
+        ...valid,
+        CDA_PORTAL_URL: "",
+      }).CDA_PORTAL_URL,
+    ).toBeUndefined();
+    expect(
+      parseEnv({
+        ...valid,
+        CDA_PORTAL_URL: "https://cda.gov.ph",
+      }).CDA_PORTAL_URL,
+    ).toBe("https://cda.gov.ph");
+  });
 });
