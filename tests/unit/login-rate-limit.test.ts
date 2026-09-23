@@ -12,7 +12,7 @@ describe("assertLoginRateLimit", () => {
   });
 
   it("allows initial IP+email attempts and then throws RateLimitError", async () => {
-    for (let attempt = 0; attempt < 5; attempt += 1) {
+    for (let attempt = 0; attempt < 60; attempt += 1) {
       await expect(
         assertLoginRateLimit("127.0.0.1", "staff@example.invalid"),
       ).resolves.toBeUndefined();

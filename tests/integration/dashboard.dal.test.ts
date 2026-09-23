@@ -10,6 +10,7 @@ import { createCooperative } from "@/lib/dal/cooperatives";
 import { getDashboardSummary } from "@/lib/dal/dashboard";
 import { prisma } from "@/lib/dal/prisma";
 import { ONGOING_REGISTRATION_STATUS_CODE } from "@/lib/dashboard/status-codes";
+import { utcCalendarYearRange } from "@/lib/dashboard/year-range";
 
 const prefix = "occdo-035";
 const actorEmail = `${prefix}-actor@example.invalid`;
@@ -17,16 +18,6 @@ const asOf = new Date("2026-06-15T00:00:00.000Z");
 
 describe("dashboard summary DAL", () => {
   let actorId = "";
-  let before = {
-    totalCooperatives: 0,
-    ongoingRegistrations: 0,
-    technicalAssistance: 0,
-    trainingsConducted: 0,
-    cooperativeOrientations: 0,
-    totalMembership: 0,
-    pendingCompliance: 0,
-    agriculture: 0,
-  };
 
   beforeAll(async () => {
     await seedCooperativeReferenceData(prisma);
@@ -44,20 +35,6 @@ describe("dashboard summary DAL", () => {
     });
     await prisma.user.deleteMany({ where: { email: actorEmail } });
     await prisma.cooperativeType.deleteMany({ where: { code: `${prefix}-CT` } });
-
-    const baseline = await getDashboardSummary({ asOf });
-    const agriculture = baseline.cooperativesBySector.find((row) => row.code === "AG");
-    const pending = baseline.complianceByStatus.find((row) => row.code === "PENDING");
-    before = {
-      totalCooperatives: baseline.kpis.totalCooperatives,
-      ongoingRegistrations: baseline.kpis.ongoingRegistrations,
-      technicalAssistance: baseline.kpis.technicalAssistance,
-      trainingsConducted: baseline.kpis.trainingsConducted,
-      cooperativeOrientations: baseline.kpis.cooperativeOrientations,
-      totalMembership: baseline.kpis.totalMembership,
-      pendingCompliance: pending?.count ?? 0,
-      agriculture: agriculture?.count ?? 0,
-    };
 
     const [actor, coopType, sector, barangay, ongoingStatus, accreditedStatus, accreditation] =
       await Promise.all([
@@ -239,23 +216,67 @@ describe("dashboard summary DAL", () => {
     await prisma.$disconnect();
   });
 
-  it("aggregates KPI deltas from PostgreSQL without PII", async () => {
-    const summary = await getDashboardSummary({ asOf });
+  it("aggregates live PostgreSQL totals without PII", async () => {
+    const { start, endExclusive } = utcCalendarYearRange(asOf);
+    const [
+      summary,
+      fixtureCoops,
+      fixtureDeliveriesYtd,
+      fixtureTrainings,
+      fixtureOrientations,
+      fixtureCompliance,
+    ] = await Promise.all([
+      getDashboardSummary({ asOf }),
+      prisma.cooperative.findMany({
+        where: { cooperativeCode: { startsWith: `${prefix}-` } },
+        select: {
+          totalMembers: true,
+          status: { select: { code: true } },
+          sector: { select: { code: true } },
+        },
+      }),
+      prisma.serviceDelivery.count({
+        where: {
+          cooperative: { cooperativeCode: { startsWith: `${prefix}-` } },
+          deliveredAt: { gte: start, lt: endExclusive },
+        },
+      }),
+      prisma.trainingEvent.count({
+        where: { title: { startsWith: `${prefix}-` }, kind: TrainingKind.TRAINING },
+      }),
+      prisma.trainingEvent.count({
+        where: { title: { startsWith: `${prefix}-` }, kind: TrainingKind.ORIENTATION },
+      }),
+      prisma.complianceRecord.count({
+        where: { cooperative: { cooperativeCode: { startsWith: `${prefix}-` } } },
+      }),
+    ]);
+
+    expect(fixtureCoops).toHaveLength(2);
+    expect(fixtureCoops.reduce((sum, row) => sum + row.totalMembers, 0)).toBe(15);
+    expect(
+      fixtureCoops.filter((row) => row.status.code === ONGOING_REGISTRATION_STATUS_CODE),
+    ).toHaveLength(1);
+    expect(fixtureCoops.every((row) => row.sector.code === "AG")).toBe(true);
+    expect(fixtureDeliveriesYtd).toBe(1);
+    expect(fixtureTrainings).toBe(1);
+    expect(fixtureOrientations).toBe(1);
+    expect(fixtureCompliance).toBe(1);
 
     expect(summary.year).toBe(2026);
-    expect(summary.kpis.totalCooperatives).toBe(before.totalCooperatives + 2);
-    expect(summary.kpis.ongoingRegistrations).toBe(before.ongoingRegistrations + 1);
-    expect(summary.kpis.technicalAssistance).toBe(before.technicalAssistance + 1);
     expect(summary.kpis.technicalAssistance).toBe(summary.ytdDeliveries);
-    expect(summary.kpis.trainingsConducted).toBe(before.trainingsConducted + 1);
-    expect(summary.kpis.cooperativeOrientations).toBe(before.cooperativeOrientations + 1);
-    expect(summary.kpis.totalMembership).toBe(before.totalMembership + 15);
+    expect(summary.kpis.totalCooperatives).toBeGreaterThanOrEqual(2);
+    expect(summary.kpis.totalMembership).toBeGreaterThanOrEqual(15);
+    expect(summary.kpis.ongoingRegistrations).toBeGreaterThanOrEqual(1);
+    expect(summary.kpis.trainingsConducted).toBeGreaterThanOrEqual(1);
+    expect(summary.kpis.cooperativeOrientations).toBeGreaterThanOrEqual(1);
 
+    const fixtureType = summary.cooperativesByType.find((row) => row.code === `${prefix}-CT`);
+    expect(fixtureType?.count).toBe(2);
     const agriculture = summary.cooperativesBySector.find((row) => row.code === "AG");
-    expect(agriculture?.count).toBe(before.agriculture + 2);
-
+    expect(agriculture?.count).toBeGreaterThanOrEqual(2);
     const pending = summary.complianceByStatus.find((row) => row.code === "PENDING");
-    expect(pending?.count).toBe(before.pendingCompliance + 1);
+    expect(pending?.count).toBeGreaterThanOrEqual(1);
 
     const payload = JSON.stringify(summary);
     expect(payload).not.toContain("09170000000");

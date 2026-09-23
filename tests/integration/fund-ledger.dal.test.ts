@@ -279,13 +279,15 @@ describe("fund ledger DAL integrity", () => {
   });
 
   it("audits ledger writes without secrets", async () => {
-    const audit = await prisma.auditLog.findFirst({
+    const audits = await prisma.auditLog.findMany({
       where: { actorId, action: "FUND_LEDGER_CREATE" },
       select: { entityType: true, metadata: true },
     });
-    expect(audit?.entityType).toBe("FundLedgerEntry");
-    expect(JSON.stringify(audit?.metadata)).toContain("DISBURSEMENT");
-    expect(JSON.stringify(audit?.metadata)).not.toContain("passwordHash");
-    expect(JSON.stringify(audit?.metadata)).not.toContain("09170000000");
+    const payloads = audits.map((audit) => JSON.stringify(audit.metadata));
+    expect(audits.length).toBeGreaterThan(0);
+    expect(audits.every((audit) => audit.entityType === "FundLedgerEntry")).toBe(true);
+    expect(payloads.some((payload) => payload.includes("DISBURSEMENT"))).toBe(true);
+    expect(payloads.every((payload) => !payload.includes("passwordHash"))).toBe(true);
+    expect(payloads.every((payload) => !payload.includes("09170000000"))).toBe(true);
   });
 });

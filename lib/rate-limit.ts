@@ -1,6 +1,7 @@
 const WINDOW_MS = 15 * 60 * 1000;
 const MAX_ATTEMPTS = 5;
 const ACTION_MAX_ATTEMPTS = 60;
+const LOGIN_MAX_ATTEMPTS = 60;
 
 const attemptsByKey = new Map<string, number[]>();
 
@@ -44,7 +45,7 @@ export async function assertActionRateLimit(identifier: string): Promise<void> {
 export async function assertLoginRateLimit(ip: string, email: string): Promise<void> {
   const ipKey = ip.trim() || "unknown";
   const emailKey = email.trim().toLowerCase() || "unknown";
-  await assertRateLimit(`login:${ipKey}:${emailKey}`);
+  await assertRateLimit(`login:${ipKey}:${emailKey}`, LOGIN_MAX_ATTEMPTS);
 }
 
 /** Test-only helper. Do not use in application code. */
