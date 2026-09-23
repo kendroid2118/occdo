@@ -42,6 +42,13 @@ enum FundLedgerEntryKind {
   RECOVERY
 }
 
+/// Office calendar items. Do not duplicate TrainingEvent or other domain records.
+enum CalendarActivityKind {
+  ACTIVITY
+  TRAINING
+  DEADLINE
+}
+
 model User {
   id            String    @id @default(cuid())
   name          String?
@@ -72,6 +79,8 @@ model User {
   complianceRecordsVerified    ComplianceRecord[] @relation("ComplianceRecordVerifiedBy")
   documentsUploaded            CooperativeDocument[] @relation("DocumentUploadedBy")
   documentsVerified            CooperativeDocument[] @relation("DocumentVerifiedBy")
+  calendarActivitiesCreated    CalendarActivity[] @relation("CalendarActivityCreatedBy")
+  calendarActivitiesUpdated    CalendarActivity[] @relation("CalendarActivityUpdatedBy")
 }
 
 model Account {
@@ -240,6 +249,7 @@ model Cooperative {
   assistanceRecords     AssistanceRecord[]
   complianceRecords     ComplianceRecord[]
   documents             CooperativeDocument[]
+  calendarActivities    CalendarActivity[]
 
   @@index([name])
   @@index([typeId])
@@ -425,6 +435,7 @@ model TrainingEvent {
   createdBy      User         @relation("TrainingEventCreatedBy", fields: [createdById], references: [id], onDelete: Restrict)
   updatedBy      User         @relation("TrainingEventUpdatedBy", fields: [updatedById], references: [id], onDelete: Restrict)
   participants   TrainingParticipant[]
+  calendarActivities CalendarActivity[]
 
   @@index([kind])
   @@index([startAt])
@@ -630,4 +641,30 @@ model DocumentTemplate {
   updatedAt   DateTime @updatedAt
 
   @@index([isActive, sortOrder])
+}
+
+/// Office/calendar activities. Optional links to Cooperative or TrainingEvent; do not copy those records.
+model CalendarActivity {
+  id              String               @id @default(cuid())
+  title           String
+  kind            CalendarActivityKind
+  startAt         DateTime
+  endAt           DateTime?
+  location        String?
+  remarks         String?
+  cooperativeId   String?
+  trainingEventId String?
+  createdAt       DateTime             @default(now())
+  updatedAt       DateTime             @updatedAt
+  createdById     String
+  updatedById     String
+  cooperative     Cooperative?         @relation(fields: [cooperativeId], references: [id], onDelete: Restrict)
+  trainingEvent   TrainingEvent?       @relation(fields: [trainingEventId], references: [id], onDelete: Restrict)
+  createdBy       User                 @relation("CalendarActivityCreatedBy", fields: [createdById], references: [id], onDelete: Restrict)
+  updatedBy       User                 @relation("CalendarActivityUpdatedBy", fields: [updatedById], references: [id], onDelete: Restrict)
+
+  @@index([startAt])
+  @@index([kind])
+  @@index([cooperativeId])
+  @@index([trainingEventId])
 }

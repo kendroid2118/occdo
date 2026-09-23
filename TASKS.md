@@ -503,7 +503,7 @@ Statuses: `TODO` | `IN PROGRESS` | `BLOCKED` | `READY FOR QA` | `DONE`
 ## OCCDO-039 — Calendar activities
 
 - **Milestone:** M12
-- **Status:** TODO
+- **Status:** DONE
 - **Objective:** `CalendarActivity` with type (activity/training/deadline), dates, optional cooperative/training links.
 - **Files/modules affected:** Prisma, DAL, actions, Calendar UI
 - **Dependencies:** OCCDO-013
