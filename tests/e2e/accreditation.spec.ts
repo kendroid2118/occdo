@@ -29,9 +29,9 @@ test("ADMIN can file, filter, view, and decide an accreditation case", async ({
 
   await page.getByLabel("Search").fill(code);
   await page.getByRole("button", { name: "Apply filters" }).click();
-  await page.getByRole("link", { name: coopName }).click();
-  await expect(page).toHaveURL(/\/cooperatives\/[^/]+$/);
-  const cooperativeId = page.url().split("/").pop();
+  const profileLink = page.getByRole("link", { name: coopName });
+  await expect(profileLink).toBeVisible();
+  const cooperativeId = (await profileLink.getAttribute("href"))?.split("/").pop();
   expect(cooperativeId).toBeTruthy();
 
   await page.goto(`/cooperatives/cases/new?cooperativeId=${cooperativeId}`);

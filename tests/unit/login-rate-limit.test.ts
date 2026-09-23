@@ -1,11 +1,13 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 import {
+  ACTION_MAX_ATTEMPTS,
   LOGIN_MAX_ATTEMPTS,
   RateLimitConfigError,
   RateLimitError,
   assertLoginRateLimit,
   resetRateLimitStateForTests,
+  resolveActionMaxAttempts,
   resolveLoginMaxAttempts,
 } from "@/lib/rate-limit";
 
@@ -111,7 +113,45 @@ describe("resolveLoginMaxAttempts", () => {
     expect(() =>
       resolveLoginMaxAttempts({
         NODE_ENV: "test",
-        TEST_LOGIN_RATE_LIMIT_MAX: "100",
+        TEST_LOGIN_RATE_LIMIT_MAX: "200",
+      }),
+    ).toThrow(RateLimitConfigError);
+  });
+});
+
+describe("resolveActionMaxAttempts", () => {
+  it("defaults to 60 outside automated tests", () => {
+    expect(resolveActionMaxAttempts({ NODE_ENV: "production" })).toBe(ACTION_MAX_ATTEMPTS);
+    expect(resolveActionMaxAttempts({ NODE_ENV: "development" })).toBe(ACTION_MAX_ATTEMPTS);
+  });
+
+  it("allows a higher cap only in test or Playwright", () => {
+    expect(
+      resolveActionMaxAttempts({
+        NODE_ENV: "test",
+        TEST_ACTION_RATE_LIMIT_MAX: "400",
+      }),
+    ).toBe(400);
+    expect(
+      resolveActionMaxAttempts({
+        NODE_ENV: "development",
+        PLAYWRIGHT: "1",
+        TEST_ACTION_RATE_LIMIT_MAX: "400",
+      }),
+    ).toBe(400);
+  });
+
+  it("fails closed when the override is used outside the permitted environment", () => {
+    expect(() =>
+      resolveActionMaxAttempts({
+        NODE_ENV: "production",
+        TEST_ACTION_RATE_LIMIT_MAX: "400",
+      }),
+    ).toThrow(RateLimitConfigError);
+    expect(() =>
+      resolveActionMaxAttempts({
+        NODE_ENV: "development",
+        TEST_ACTION_RATE_LIMIT_MAX: "400",
       }),
     ).toThrow(RateLimitConfigError);
   });

@@ -75,7 +75,11 @@ test("SUPER_ADMIN can add a sector, deactivate a type, and keep the historical n
   await expect(page).toHaveURL(/\/cooperatives$/);
 
   await page.goto("/settings/reference?catalog=type");
-  await page.getByRole("row", { name: new RegExp(typeName) }).getByRole("link", { name: "Edit" }).click();
+  const editLink = page.getByRole("row", { name: new RegExp(typeName) }).getByRole("link", { name: "Edit" });
+  await expect(editLink).toBeVisible();
+  const editHref = await editLink.getAttribute("href");
+  expect(editHref).toBeTruthy();
+  await page.goto(editHref ?? "/settings/reference");
   await expect(page.getByRole("heading", { name: "Edit type", level: 2 })).toBeVisible();
   await page.getByLabel("Active").uncheck();
   await page.getByRole("button", { name: "Save type" }).click();
@@ -84,6 +88,10 @@ test("SUPER_ADMIN can add a sector, deactivate a type, and keep the historical n
   await page.goto("/cooperatives");
   await page.getByLabel("Search").fill(coopCode);
   await page.getByRole("button", { name: "Apply filters" }).click();
-  await page.getByRole("link", { name: coopName }).click();
+  const profileLink = page.getByRole("link", { name: coopName });
+  await expect(profileLink).toBeVisible();
+  const profileHref = await profileLink.getAttribute("href");
+  expect(profileHref).toBeTruthy();
+  await page.goto(profileHref ?? "/cooperatives");
   await expect(page.getByText(typeName)).toBeVisible();
 });

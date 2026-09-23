@@ -88,4 +88,28 @@ describe("parseEnv", () => {
       }),
     ).toThrow();
   });
+
+  it("accepts TEST_ACTION_RATE_LIMIT_MAX only in automated tests", () => {
+    expect(parseEnv(valid).TEST_ACTION_RATE_LIMIT_MAX).toBeUndefined();
+    expect(
+      parseEnv({
+        ...valid,
+        TEST_ACTION_RATE_LIMIT_MAX: "400",
+      }).TEST_ACTION_RATE_LIMIT_MAX,
+    ).toBe(400);
+    expect(() =>
+      parseEnv({
+        ...valid,
+        NODE_ENV: "production",
+        TEST_ACTION_RATE_LIMIT_MAX: "400",
+      }),
+    ).toThrow();
+    expect(() =>
+      parseEnv({
+        ...valid,
+        NODE_ENV: "development",
+        TEST_ACTION_RATE_LIMIT_MAX: "400",
+      }),
+    ).toThrow();
+  });
 });

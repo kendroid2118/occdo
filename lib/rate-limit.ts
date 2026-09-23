@@ -1,8 +1,9 @@
 const WINDOW_MS = 15 * 60 * 1000;
 const MAX_ATTEMPTS = 5;
-const ACTION_MAX_ATTEMPTS = 60;
+export const ACTION_MAX_ATTEMPTS = 60;
 export const LOGIN_MAX_ATTEMPTS = 5;
-const TEST_LOGIN_MAX_ATTEMPTS_CAP = 60;
+const TEST_LOGIN_MAX_ATTEMPTS_CAP = 120;
+const TEST_ACTION_MAX_ATTEMPTS_CAP = 500;
 
 const attemptsByKey = new Map<string, number[]>();
 
@@ -24,7 +25,7 @@ export class RateLimitConfigError extends Error {
   }
 }
 
-function isTestLoginOverridePermitted(
+function isTestRateLimitOverridePermitted(
   source: NodeJS.ProcessEnv = process.env,
 ): boolean {
   const nodeEnv = source.NODE_ENV;
@@ -40,7 +41,7 @@ export function resolveLoginMaxAttempts(
     return LOGIN_MAX_ATTEMPTS;
   }
 
-  if (!isTestLoginOverridePermitted(source)) {
+  if (!isTestRateLimitOverridePermitted(source)) {
     throw new RateLimitConfigError(
       "TEST_LOGIN_RATE_LIMIT_MAX is only allowed in automated tests",
     );
@@ -82,8 +83,34 @@ export async function assertRateLimit(
   attemptsByKey.set(key, next);
 }
 
+export function resolveActionMaxAttempts(
+  source: NodeJS.ProcessEnv = process.env,
+): number {
+  const raw = source.TEST_ACTION_RATE_LIMIT_MAX;
+  if (raw == null || raw.trim() === "") {
+    return ACTION_MAX_ATTEMPTS;
+  }
+
+  if (!isTestRateLimitOverridePermitted(source)) {
+    throw new RateLimitConfigError(
+      "TEST_ACTION_RATE_LIMIT_MAX is only allowed in automated tests",
+    );
+  }
+
+  const parsed = Number.parseInt(raw, 10);
+  if (
+    !Number.isInteger(parsed) ||
+    parsed < ACTION_MAX_ATTEMPTS ||
+    parsed > TEST_ACTION_MAX_ATTEMPTS_CAP
+  ) {
+    throw new RateLimitConfigError("TEST_ACTION_RATE_LIMIT_MAX is invalid");
+  }
+
+  return parsed;
+}
+
 export async function assertActionRateLimit(identifier: string): Promise<void> {
-  await assertRateLimit(identifier, ACTION_MAX_ATTEMPTS);
+  await assertRateLimit(identifier, resolveActionMaxAttempts());
 }
 
 export async function assertLoginRateLimit(ip: string, email: string): Promise<void> {

@@ -20,7 +20,11 @@ export const envSchema = z.object({
   ),
   TEST_LOGIN_RATE_LIMIT_MAX: z.preprocess(
     (value) => (value === "" || value == null ? undefined : value),
-    z.coerce.number().int().min(5).max(60).optional(),
+    z.coerce.number().int().min(5).max(120).optional(),
+  ),
+  TEST_ACTION_RATE_LIMIT_MAX: z.preprocess(
+    (value) => (value === "" || value == null ? undefined : value),
+    z.coerce.number().int().min(60).max(500).optional(),
   ),
 });
 
@@ -28,19 +32,26 @@ export type Env = z.infer<typeof envSchema>;
 
 export function parseEnv(source: Record<string, string | undefined>): Env {
   const env = envSchema.parse(source);
-  if (env.TEST_LOGIN_RATE_LIMIT_MAX != null) {
-    const permitted =
-      env.NODE_ENV === "test" ||
-      (env.NODE_ENV !== "production" && source.PLAYWRIGHT === "1");
-    if (!permitted) {
-      throw new z.ZodError([
-        {
-          code: z.ZodIssueCode.custom,
-          path: ["TEST_LOGIN_RATE_LIMIT_MAX"],
-          message: "TEST_LOGIN_RATE_LIMIT_MAX is only allowed in automated tests",
-        },
-      ]);
-    }
+  const testOverridePermitted =
+    env.NODE_ENV === "test" ||
+    (env.NODE_ENV !== "production" && source.PLAYWRIGHT === "1");
+  if (env.TEST_LOGIN_RATE_LIMIT_MAX != null && !testOverridePermitted) {
+    throw new z.ZodError([
+      {
+        code: z.ZodIssueCode.custom,
+        path: ["TEST_LOGIN_RATE_LIMIT_MAX"],
+        message: "TEST_LOGIN_RATE_LIMIT_MAX is only allowed in automated tests",
+      },
+    ]);
+  }
+  if (env.TEST_ACTION_RATE_LIMIT_MAX != null && !testOverridePermitted) {
+    throw new z.ZodError([
+      {
+        code: z.ZodIssueCode.custom,
+        path: ["TEST_ACTION_RATE_LIMIT_MAX"],
+        message: "TEST_ACTION_RATE_LIMIT_MAX is only allowed in automated tests",
+      },
+    ]);
   }
   return env;
 }

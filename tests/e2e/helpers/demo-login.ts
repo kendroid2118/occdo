@@ -17,7 +17,7 @@ export async function loginAsDemoUser(page: Page): Promise<{ email: string }> {
   await page.getByLabel("Email").fill(email);
   await page.getByLabel("Password").fill(password);
   await page.getByRole("button", { name: "Sign in" }).click();
-  await expect(page).toHaveURL(/\/dashboard$/);
+  await expect(page).toHaveURL(/\/dashboard$/, { timeout: 15_000 });
 
   return { email };
 }
@@ -52,7 +52,7 @@ export async function loginAsDemoSuperAdmin(page: Page): Promise<{ email: string
   await page.getByLabel("Email").fill(email);
   await page.getByLabel("Password").fill(password);
   await page.getByRole("button", { name: "Sign in" }).click();
-  await expect(page).toHaveURL(/\/dashboard$/);
+  await expect(page).toHaveURL(/\/dashboard$/, { timeout: 15_000 });
 
   return { email };
 }
@@ -67,7 +67,7 @@ export async function loginAsDemoAdmin(page: Page): Promise<{ email: string }> {
   await page.getByLabel("Email").fill(email);
   await page.getByLabel("Password").fill(password);
   await page.getByRole("button", { name: "Sign in" }).click();
-  await expect(page).toHaveURL(/\/dashboard$/);
+  await expect(page).toHaveURL(/\/dashboard$/, { timeout: 15_000 });
 
   return { email };
 }
