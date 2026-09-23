@@ -122,9 +122,8 @@ export const navigation: NavItem[] = [
     icon: Settings,
     children: [
       { href: "/settings/users", label: "Users" },
-      { href: "/settings", label: "Roles" },
-      { href: "/settings", label: "Reference Data" },
-      { href: "/settings", label: "System Configuration" },
+      { href: "/settings/reference", label: "Reference Data" },
+      { href: "/settings/configuration", label: "System Configuration" },
     ],
   },
 ];
@@ -138,6 +137,18 @@ export function titleForPath(pathname: string): string {
   }
   if (pathname === "/settings/users/new") {
     return "New user";
+  }
+  if (pathname === "/settings/reference") {
+    return "Reference data";
+  }
+  if (pathname === "/settings/configuration") {
+    return "System configuration";
+  }
+  if (/^\/settings\/reference\/[^/]+\/new$/.test(pathname)) {
+    return "Add catalog item";
+  }
+  if (/^\/settings\/reference\/[^/]+\/[^/]+\/edit$/.test(pathname)) {
+    return "Edit catalog item";
   }
   if (/^\/settings\/users\/[^/]+\/edit$/.test(pathname)) {
     return "Edit user";

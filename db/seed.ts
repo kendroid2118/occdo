@@ -34,6 +34,9 @@ async function seed(): Promise<void> {
       const demoAdminEmail = (
         process.env.SEED_DEMO_ADMIN_EMAIL ?? "demo.admin@occdo.local"
       ).toLowerCase();
+      const demoSuperEmail = (
+        process.env.SEED_DEMO_SUPER_ADMIN_EMAIL ?? "demo.super@occdo.local"
+      ).toLowerCase();
 
       await prisma.user.upsert({
         where: { email: demoEmail },
@@ -62,6 +65,22 @@ async function seed(): Promise<void> {
         },
         update: {
           name: "OCCDO Demo Admin (seed)",
+          isActive: true,
+          passwordHash,
+        },
+      });
+
+      await prisma.user.upsert({
+        where: { email: demoSuperEmail },
+        create: {
+          email: demoSuperEmail,
+          name: "OCCDO Demo Super Admin (seed)",
+          role: Role.SUPER_ADMIN,
+          isActive: true,
+          passwordHash,
+        },
+        update: {
+          name: "OCCDO Demo Super Admin (seed)",
           isActive: true,
           passwordHash,
         },

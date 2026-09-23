@@ -540,7 +540,7 @@ Statuses: `TODO` | `IN PROGRESS` | `BLOCKED` | `READY FOR QA` | `DONE`
 ## OCCDO-042 — Reference data and system configuration UI
 
 - **Milestone:** M13
-- **Status:** TODO
+- **Status:** DONE
 - **Objective:** CRUD for configurable catalogs (sectors, types, statuses, barangays, programs, **assistance types**, requirements, **document types**) and non-secret system config including **CDA Portal URL**.
 - **Files/modules affected:** `app/(dashboard)/settings/**`
 - **Dependencies:** OCCDO-016, OCCDO-025, OCCDO-031

@@ -7,14 +7,15 @@ import { DashboardEmptyPanel } from "@/components/dashboard/dashboard-empty-pane
 import { DashboardKpiCards } from "@/components/dashboard/dashboard-kpi-cards";
 import { listPublishedAnnouncementsAction } from "@/lib/actions/announcements";
 import { getDashboardSummaryAction } from "@/lib/actions/dashboard";
-import { getCdaPortalUrl } from "@/lib/dashboard/cda-portal";
+import { getCdaPortalConfigAction } from "@/lib/actions/system-config";
 
 export const metadata: Metadata = {
   title: "Dashboard",
 };
 
 export default async function DashboardPage() {
-  const cdaPortalUrl = getCdaPortalUrl();
+  const cdaConfig = await getCdaPortalConfigAction({});
+  const cdaPortalUrl = cdaConfig.ok ? cdaConfig.data.resolvedUrl : null;
   const result = await getDashboardSummaryAction({});
   const announcementsResult = await listPublishedAnnouncementsAction({});
 

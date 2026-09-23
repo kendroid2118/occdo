@@ -83,6 +83,7 @@ model User {
   calendarActivitiesUpdated    CalendarActivity[] @relation("CalendarActivityUpdatedBy")
   announcementsCreated         Announcement[]     @relation("AnnouncementCreatedBy")
   announcementsUpdated         Announcement[]     @relation("AnnouncementUpdatedBy")
+  systemConfigsUpdated         SystemConfig[]     @relation("SystemConfigUpdatedBy")
 }
 
 model Account {
@@ -689,4 +690,13 @@ model Announcement {
   @@index([publishedAt])
   @@index([isActive, publishedAt])
   @@index([expiresAt])
+}
+
+/// Non-secret office settings. Allowed keys are application-defined; secrets stay in env.
+model SystemConfig {
+  key         String   @id
+  value       String
+  updatedAt   DateTime @updatedAt
+  updatedById String
+  updatedBy   User     @relation("SystemConfigUpdatedBy", fields: [updatedById], references: [id], onDelete: Restrict)
 }
